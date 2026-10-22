@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="220dp"
+    android:height="60dp"
+    android:viewportWidth="440"
+    android:viewportHeight="120">
+
+    <!-- Hoja verde superior izquierda -->
+    <path
+        android:fillColor="#659833"
+        android:pathData="M36,4 C20,4 2,24 0,48 C6,56 18,58 28,52 C40,44 44,26 44,12 C44,8 40,4 36,4 Z" />
+
+    <path
+        android:fillColor="#78B83E"
+        android:pathData="M33,14 C26,24 16,36 10,48 C12,47 16,45 20,42 C28,36 34,26 36,18 C36,15 34,14 33,14 Z" />
+
+    <path
+        android:fillColor="#659833"
+        android:pathData="M12,50 C13,57 14,64 15,67 C14,67 13,60 11,53 Z" />
+
+    <!-- Letra 'b' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M54,9 H70 V46 C74,40 82,37 90,37 C108,37 118,51 118,74 C118,97 106,113 89,113 C80,113 74,109 70,103 V112 H54 Z M86,52 C77,52 70,59 70,74 C70,89 77,98 86,98 C95,98 102,89 102,74 C102,59 95,52 86,52 Z" />
+
+    <!-- Punto de la letra 'i' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M131,22 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 Z" />
+
+    <!-- Cuerpo de la letra 'i' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M134,39 h12 a2,2 0 0,1 2,2 v69 a2,2 0 0,1 -2,2 h-12 a2,2 0 0,1 -2,-2 v-69 a2,2 0 0,1 2,-2 Z" />
+
+    <!-- Letra 'o' con gota de agua integrada como espacio negativo -->
+    <path
+        android:fillColor="#EB6819"
+        android:fillType="evenOdd"
+        android:pathData="M203,37 C228,37 246,54 246,75 C246,96 228,113 203,113 C178,113 160,96 160,75 C160,54 178,37 203,37 Z M203,52 C196,62 189,75 189,82 C189,90 195,97 203,97 C211,97 217,90 217,82 C217,75 210,62 203,52 Z" />
+
+    <!-- Letra 's' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M260,98 C265,107 274,113 287,113 C302,113 313,105 313,92 C313,80 304,74 289,71 L281,69 C274,68 270,65 270,60 C270,54 276,49 285,49 C293,49 299,53 303,60 L316,52 C310,42 300,37 286,37 C271,37 254,46 254,61 C254,72 262,79 276,82 L285,84 C294,86 298,89 298,94 C298,100 291,104 283,104 C274,104 267,99 263,90 Z" />
+
+    <!-- Letra 'u' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M329,39 H345 V77 C345,90 351,98 362,98 C373,98 379,90 379,77 V39 H395 V112 H380 V102 C375,108 367,113 357,113 C339,113 329,101 329,81 Z" />
+
+    <!-- Letra 'r' -->
+    <path
+        android:fillColor="#EB6819"
+        android:pathData="M410,39 H425 V51 C429,43 437,38 448,39 L444,55 C435,54 426,59 426,71 V112 H410 Z" />
+
+</vector>

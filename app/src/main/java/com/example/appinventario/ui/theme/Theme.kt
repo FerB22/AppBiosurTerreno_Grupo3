@@ -33,7 +33,8 @@ private val LightColorScheme = lightColorScheme(
     onSurface = BiosurOnSurface,
     surfaceVariant = BiosurSurfaceVariant,
     onSurfaceVariant = BiosurOnSurfaceVariant,
-    outline = BiosurOutline
+    outline = BiosurOutline,
+    surfaceTint = androidx.compose.ui.graphics.Color.Transparent
 )
 
 private val DarkColorScheme = darkColorScheme(

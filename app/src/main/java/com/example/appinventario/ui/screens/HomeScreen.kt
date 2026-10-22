@@ -3,6 +3,8 @@ package com.example.appinventario.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +25,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
@@ -49,9 +51,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.appinventario.R
 import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.model.TipoServicio
@@ -83,18 +87,17 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Build,
-                            contentDescription = "Biosur Logo",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(24.dp)
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_biosur),
+                            contentDescription = "Logo Biosur",
+                            modifier = Modifier.height(26.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Biosur Terreno",
+                            text = "Terreno",
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -137,20 +140,37 @@ fun HomeScreen(
                     onClick = { filtroSeleccionado = null },
                     label = { Text("Todas") },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        selectedContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = Color.White,
+                        labelColor = MaterialTheme.colorScheme.onSurface
+                    ),
+                    border = FilterChipDefaults.filterChipBorder(
+                        borderColor = MaterialTheme.colorScheme.outline,
+                        selectedBorderColor = MaterialTheme.colorScheme.primary,
+                        enabled = true,
+                        selected = filtroSeleccionado == null
                     )
                 )
                 TipoServicio.entries.forEach { tipo ->
+                    val isSelected = filtroSeleccionado == tipo
                     FilterChip(
-                        selected = filtroSeleccionado == tipo,
+                        selected = isSelected,
                         onClick = {
-                            filtroSeleccionado = if (filtroSeleccionado == tipo) null else tipo
+                            filtroSeleccionado = if (isSelected) null else tipo
                         },
                         label = { Text(tipo.etiqueta, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = Color.White,
+                            labelColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = FilterChipDefaults.filterChipBorder(
+                            borderColor = MaterialTheme.colorScheme.outline,
+                            selectedBorderColor = MaterialTheme.colorScheme.primary,
+                            enabled = true,
+                            selected = isSelected
                         )
                     )
                 }
@@ -170,7 +190,7 @@ fun HomeScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            imageVector = Icons.Default.Build,
+                            imageVector = Icons.Default.Info,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.outline,
                             modifier = Modifier.size(48.dp)
@@ -222,9 +242,10 @@ fun ServicioCard(
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = Color.White
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
@@ -317,9 +338,9 @@ fun EstadoBadge(
     modifier: Modifier = Modifier
 ) {
     val (bgColor, textColor) = when (estado) {
-        EstadoServicio.EN_PROCESO -> Color(0xFFFFF3E0) to Color(0xFFE65100)
-        EstadoServicio.FINALIZADO -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-        EstadoServicio.PENDIENTE_REVISION -> Color(0xFFEDE7F6) to Color(0xFF512DA8)
+        EstadoServicio.EN_PROCESO -> Color(0xFFE0F2FE) to Color(0xFF0284C7)
+        EstadoServicio.FINALIZADO -> Color(0xFFEBF5DE) to Color(0xFF2E6A44)
+        EstadoServicio.PENDIENTE_REVISION -> Color(0xFFF1F5F9) to Color(0xFF475569)
     }
 
     Card(
