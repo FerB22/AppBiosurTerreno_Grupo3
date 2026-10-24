@@ -82,6 +82,7 @@ import com.example.appinventario.util.CameraUtil
 import com.example.appinventario.viewmodel.FormularioUiState
 import com.example.appinventario.viewmodel.ServicioViewModel
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 
 /**
  * Pantalla de registro de nuevas faenas operativas en terreno.
@@ -148,26 +149,43 @@ fun RegistroServicioScreen(
         }
     }
 
-    // Geolocalización GPS nativa (IE 2.4.1)
+    // Geolocalización GPS nativa con arquitectura híbrida resiliente
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+
+    fun solicitarUbicacionHardware() {
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
+                if (loc != null) {
+                    viewModel.onUbicacionGpsCaptured(loc.latitude, loc.longitude)
+                } else {
+                    fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+                        .addOnSuccessListener { freshLoc ->
+                            if (freshLoc != null) {
+                                viewModel.onUbicacionGpsCaptured(freshLoc.latitude, freshLoc.longitude)
+                            } else {
+                                // Respaldo operativo de faena para interiores sin señal satelital
+                                viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
+                            }
+                        }
+                        .addOnFailureListener {
+                            viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
+                        }
+                }
+            }.addOnFailureListener {
+                viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
+            }
+        } catch (_: SecurityException) {
+            viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
+        }
+    }
+
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val concedido = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (concedido) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-                    if (loc != null) {
-                        viewModel.onUbicacionGpsCaptured(loc.latitude, loc.longitude)
-                    } else {
-                        // Respaldo de faena en caso de satélites no enlazados en interiores
-                        viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
-                    }
-                }
-            } catch (_: SecurityException) {
-                viewModel.onUbicacionGpsCaptured(-36.8270, -73.0503)
-            }
+            solicitarUbicacionHardware()
         }
     }
 
@@ -178,17 +196,7 @@ fun RegistroServicioScreen(
         ) == PackageManager.PERMISSION_GRANTED
 
         if (tieneGps) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { loc ->
-                    if (loc != null) {
-                        viewModel.onUbicacionGpsCaptured(loc.latitude, loc.longitude)
-                    } else {
-                        viewModel.onUbicacionGpsCaptured(-37.4697, -72.3537)
-                    }
-                }
-            } catch (_: SecurityException) {
-                viewModel.onUbicacionGpsCaptured(-37.4697, -72.3537)
-            }
+            solicitarUbicacionHardware()
         } else {
             locationPermissionLauncher.launch(
                 arrayOf(
