@@ -9,6 +9,7 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import com.example.appinventario.ui.navigation.BiosurApp
 import com.example.appinventario.ui.theme.AppInventarioTheme
+import com.example.appinventario.viewmodel.AuthViewModel
 import com.example.appinventario.viewmodel.ServicioViewModel
 
 /**
@@ -18,6 +19,7 @@ import com.example.appinventario.viewmodel.ServicioViewModel
 class MainActivity : ComponentActivity() {
 
     private val servicioViewModel: ServicioViewModel by viewModels()
+    private val authViewModel: AuthViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,7 +30,8 @@ class MainActivity : ComponentActivity() {
             AppInventarioTheme {
                 BiosurApp(
                     windowWidthSizeClass = windowSizeClass.widthSizeClass,
-                    viewModel = servicioViewModel
+                    viewModel = servicioViewModel,
+                    authViewModel = authViewModel
                 )
             }
         }

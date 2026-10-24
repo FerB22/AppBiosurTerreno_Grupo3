@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -32,7 +33,9 @@ import com.example.appinventario.model.Screen
 import com.example.appinventario.ui.screens.ConfiguracionScreen
 import com.example.appinventario.ui.screens.DetalleServicioScreen
 import com.example.appinventario.ui.screens.HomeScreen
+import com.example.appinventario.ui.screens.LoginScreen
 import com.example.appinventario.ui.screens.RegistroServicioScreen
+import com.example.appinventario.viewmodel.AuthViewModel
 import com.example.appinventario.viewmodel.ServicioViewModel
 
 data class DestinoNavegacion(
@@ -48,7 +51,7 @@ val DestinosPrincipales = listOf(
 )
 
 /**
- * Estructura de navegación principal y adaptativa según WindowSizeClass (Guías 9 y 10).
+ * Estructura de navegación principal y adaptativa según WindowSizeClass.
  * Teléfonos compactos -> Barra inferior (NavigationBar).
  * Tabletas y pantallas extendidas -> Barra lateral (NavigationRail).
  */
@@ -57,39 +60,44 @@ fun BiosurApp(
     windowWidthSizeClass: WindowWidthSizeClass,
     viewModel: ServicioViewModel,
     modifier: Modifier = Modifier,
+    authViewModel: AuthViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     val esPantallaExpandida = windowWidthSizeClass != WindowWidthSizeClass.Compact
+    val mostrarBarra = DestinosPrincipales.any { it.ruta == currentRoute }
 
     if (esPantallaExpandida) {
         // Diseño para Tableta / Pantalla horizontal (NavigationRail)
         Row(modifier = modifier.fillMaxSize()) {
-            NavigationRail {
-                DestinosPrincipales.forEach { destino ->
-                    val seleccionado = currentRoute == destino.ruta
-                    NavigationRailItem(
-                        selected = seleccionado,
-                        onClick = {
-                            navController.navigate(destino.ruta) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (mostrarBarra) {
+                NavigationRail {
+                    DestinosPrincipales.forEach { destino ->
+                        val seleccionado = currentRoute == destino.ruta
+                        NavigationRailItem(
+                            selected = seleccionado,
+                            onClick = {
+                                navController.navigate(destino.ruta) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(destino.icono, contentDescription = destino.titulo) },
-                        label = { Text(destino.titulo) }
-                    )
+                            },
+                            icon = { Icon(destino.icono, contentDescription = destino.titulo) },
+                            label = { Text(destino.titulo) }
+                        )
+                    }
                 }
             }
 
             BiosurNavHost(
                 navController = navController,
                 viewModel = viewModel,
+                authViewModel = authViewModel,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -97,8 +105,7 @@ fun BiosurApp(
         // Diseño para Teléfono (NavigationBar inferior)
         Scaffold(
             bottomBar = {
-                // Solo mostrar la barra inferior en las pantallas principales
-                val mostrarBarra = DestinosPrincipales.any { it.ruta == currentRoute }
+                // Solo mostrar la barra inferior en destinos principales autenticados
                 if (mostrarBarra) {
                     NavigationBar {
                         DestinosPrincipales.forEach { destino ->
@@ -126,6 +133,7 @@ fun BiosurApp(
             BiosurNavHost(
                 navController = navController,
                 viewModel = viewModel,
+                authViewModel = authViewModel,
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -136,16 +144,35 @@ fun BiosurApp(
 fun BiosurNavHost(
     navController: NavHostController,
     viewModel: ServicioViewModel,
+    authViewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
     val servicios by viewModel.servicios.collectAsState()
     val formularioUiState by viewModel.formularioState.collectAsState()
+    val loginUiState by authViewModel.uiState.collectAsState()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = Screen.Login.route,
         modifier = modifier
     ) {
+        // Pantalla 0: Acceso institucional (Inicio de sesión con Denegación por Defecto)
+        composable(Screen.Login.route) {
+            LoginScreen(
+                uiState = loginUiState,
+                viewModel = authViewModel,
+                onLoginExitoso = {
+                    // Sincronizar el nombre y supervisor activo con base en el usuario autenticado
+                    loginUiState.usuarioAutenticado?.let { user ->
+                        viewModel.onSupervisorChange(user.nombre)
+                    }
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         // Pantalla 1: Historial de Órdenes
         composable(Screen.Home.route) {
             HomeScreen(
@@ -191,12 +218,19 @@ fun BiosurNavHost(
             )
         }
 
-        // Pantalla 4: Ajustes y Preferencias del Supervisor
+        // Pantalla 4: Ajustes, Preferencias y Sesión Institucional
         composable(Screen.Configuracion.route) {
             ConfiguracionScreen(
                 supervisorInicial = formularioUiState.supervisor,
+                usuarioActivo = loginUiState.usuarioAutenticado,
                 onSupervisorGuardado = { nuevoSupervisor ->
                     viewModel.onSupervisorChange(nuevoSupervisor)
+                },
+                onCerrarSesion = {
+                    authViewModel.cerrarSesion()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
             )
         }
