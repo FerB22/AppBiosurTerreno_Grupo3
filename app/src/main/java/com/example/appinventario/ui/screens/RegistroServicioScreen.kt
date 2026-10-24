@@ -437,7 +437,7 @@ fun RegistroServicioScreen(
                 }
             }
 
-            // 4. Panel de Recursos Nativos: Cámara y Geolocalización GPS (IE 2.4.1)
+            // 4. Panel de recursos en faena: Cámara y geolocalización GPS
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -448,7 +448,7 @@ fun RegistroServicioScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Recursos nativos en faena (IE 2.4.1)",
+                        text = "Evidencia y geolocalización en faena",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
@@ -457,7 +457,7 @@ fun RegistroServicioScreen(
 
                     // Botones de cámara
                     Text(
-                        text = "Evidencia fotográfica (FileProvider):",
+                        text = "Evidencia fotográfica:",
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )

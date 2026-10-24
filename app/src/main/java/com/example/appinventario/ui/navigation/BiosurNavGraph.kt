@@ -220,9 +220,14 @@ fun BiosurNavHost(
 
         // Pantalla 4: Ajustes, Preferencias y Sesión Institucional
         composable(Screen.Configuracion.route) {
+            val modoTema by viewModel.modoTema.collectAsState()
             ConfiguracionScreen(
                 supervisorInicial = formularioUiState.supervisor,
                 usuarioActivo = loginUiState.usuarioAutenticado,
+                modoTemaActual = modoTema,
+                onModoTemaChange = { nuevoModo ->
+                    viewModel.onModoTemaChange(nuevoModo)
+                },
                 onSupervisorGuardado = { nuevoSupervisor ->
                     viewModel.onSupervisorChange(nuevoSupervisor)
                 },

@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Permisos para recursos nativos (IE 2.4.1) -->
+    <!-- Permisos para recursos de hardware en faena (Cámara y GPS) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />

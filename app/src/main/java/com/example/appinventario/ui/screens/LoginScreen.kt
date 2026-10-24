@@ -416,7 +416,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "Política de denegación por defecto activa: cualquier dirección externa a la lista blanca es rechazada de forma inmediata.",
+                    text = "Acceso seguro restringido exclusivamente para personal operativo y administrativo autorizado de Biosur SpA.",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center

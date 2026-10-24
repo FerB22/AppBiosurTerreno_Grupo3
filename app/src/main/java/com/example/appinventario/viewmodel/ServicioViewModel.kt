@@ -3,6 +3,7 @@ package com.example.appinventario.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appinventario.model.EstadoServicio
+import com.example.appinventario.model.ModoTema
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.model.TipoServicio
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,9 +36,13 @@ data class FormularioUiState(
 
 /**
  * ViewModel que desacopla la lógica de negocio y las validaciones de la interfaz visual.
- * Cumple rigurosamente con IE 2.2.1 (gestión de estado reactivo mediante StateFlow).
+ * Gestiona el estado reactivo mediante StateFlow.
  */
 class ServicioViewModel : ViewModel() {
+
+    // Modo de tema visual (Claro, Según sistema, Oscuro)
+    private val _modoTema = MutableStateFlow(ModoTema.SISTEMA)
+    val modoTema: StateFlow<ModoTema> = _modoTema.asStateFlow()
 
     // Lista en memoria para operación offline inmediata (se integrará con el repositorio Room de Esteban)
     private val _servicios = MutableStateFlow<List<Servicio>>(generarDatosIniciales())
@@ -45,6 +50,10 @@ class ServicioViewModel : ViewModel() {
 
     private val _formularioState = MutableStateFlow(FormularioUiState())
     val formularioState: StateFlow<FormularioUiState> = _formularioState.asStateFlow()
+
+    fun onModoTemaChange(nuevoModo: ModoTema) {
+        _modoTema.update { nuevoModo }
+    }
 
     fun onTipoServicioChange(nuevoTipo: TipoServicio) {
         _formularioState.update { it.copy(tipoServicio = nuevoTipo) }

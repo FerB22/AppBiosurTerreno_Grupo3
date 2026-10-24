@@ -203,7 +203,7 @@ fun DetalleServicioScreen(
                     }
                 }
 
-                // Tarjeta 2: Evidencia Fotográfica Pericial (IE 2.4.1)
+                // Tarjeta 2: Evidencia fotográfica pericial
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -215,7 +215,7 @@ fun DetalleServicioScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Evidencia fotográfica pericial (IE 2.4.1)",
+                            text = "Evidencia fotográfica pericial",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary

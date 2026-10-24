@@ -5,8 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.appinventario.model.ModoTema
 import com.example.appinventario.ui.navigation.BiosurApp
 import com.example.appinventario.ui.theme.AppInventarioTheme
 import com.example.appinventario.viewmodel.AuthViewModel
@@ -27,7 +31,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val windowSizeClass = calculateWindowSizeClass(this)
-            AppInventarioTheme {
+            val modoTema by servicioViewModel.modoTema.collectAsState()
+            val esOscuro = when (modoTema) {
+                ModoTema.CLARO -> false
+                ModoTema.OSCURO -> true
+                ModoTema.SISTEMA -> isSystemInDarkTheme()
+            }
+
+            AppInventarioTheme(darkTheme = esOscuro) {
                 BiosurApp(
                     windowWidthSizeClass = windowSizeClass.widthSizeClass,
                     viewModel = servicioViewModel,
