@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
@@ -34,7 +35,7 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = BiosurSurfaceVariant,
     onSurfaceVariant = BiosurOnSurfaceVariant,
     outline = BiosurOutline,
-    surfaceTint = androidx.compose.ui.graphics.Color.Transparent
+    surfaceTint = Color.Transparent
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -46,16 +47,28 @@ private val DarkColorScheme = darkColorScheme(
     onSecondary = BiosurOnSecondaryDark,
     secondaryContainer = BiosurSecondaryContainerDark,
     onSecondaryContainer = BiosurOnSecondaryContainerDark,
+    tertiary = BiosurTertiaryDark,
+    onTertiary = BiosurOnTertiaryDark,
+    tertiaryContainer = BiosurTertiaryContainerDark,
+    onTertiaryContainer = BiosurOnTertiaryContainerDark,
+    error = BiosurErrorDark,
+    onError = BiosurOnErrorDark,
+    errorContainer = BiosurErrorContainerDark,
+    onErrorContainer = BiosurOnErrorContainerDark,
     background = BiosurBackgroundDark,
     onBackground = BiosurOnBackgroundDark,
     surface = BiosurSurfaceDark,
-    onSurface = BiosurOnSurfaceDark
+    onSurface = BiosurOnSurfaceDark,
+    surfaceVariant = BiosurSurfaceVariantDark,
+    onSurfaceVariant = BiosurOnSurfaceVariantDark,
+    outline = BiosurOutlineDark,
+    surfaceTint = Color.Transparent
 )
 
 @Composable
 fun AppInventarioTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // false para conservar la identidad visual corporativa de Biosur
+    dynamicColor: Boolean = false, // false para preservar la identidad corporativa de Biosur SpA
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

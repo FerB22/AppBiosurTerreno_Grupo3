@@ -46,7 +46,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -58,17 +57,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appinventario.R
 import com.example.appinventario.model.RolUsuario
-import com.example.appinventario.ui.theme.BiosurBackground
-import com.example.appinventario.ui.theme.BiosurOutline
 import com.example.appinventario.viewmodel.AuthViewModel
 import com.example.appinventario.viewmodel.LoginUiState
 
 /**
  * Pantalla de inicio de sesión institucional de Biosur Terreno.
- *
- * Aplica rigurosamente:
- * 1. Denegación por defecto (Default Deny): únicamente se admiten dominios institucionales autorizados.
- * 2. Menor privilegio (Least Privilege): asignación estricta de permisos según el perfil del usuario.
+ * Diseñada para soporte completo en modo claro y modo oscuro con contraste accesible.
  */
 @Composable
 fun LoginScreen(
@@ -86,10 +80,26 @@ fun LoginScreen(
 
     val scrollState = rememberScrollState()
 
+    val textFieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+        focusedContainerColor = MaterialTheme.colorScheme.surface,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
+        unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+        focusedLabelColor = MaterialTheme.colorScheme.primary,
+        unfocusedLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        cursorColor = MaterialTheme.colorScheme.primary,
+        errorTextColor = MaterialTheme.colorScheme.onSurface,
+        errorBorderColor = MaterialTheme.colorScheme.error,
+        errorLabelColor = MaterialTheme.colorScheme.error,
+        errorLeadingIconColor = MaterialTheme.colorScheme.error
+    )
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(BiosurBackground)
+            .background(MaterialTheme.colorScheme.background)
             .imePadding(),
         contentAlignment = Alignment.Center
     ) {
@@ -101,7 +111,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // Cabecera institucional: Logotipo Biosur y distintivo
+            // Cabecera institucional
             Image(
                 painter = painterResource(id = R.drawable.logo_biosur),
                 contentDescription = "Logotipo Biosur SpA",
@@ -119,7 +129,7 @@ fun LoginScreen(
                     text = "ACCESO INSTITUCIONAL",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSecondary,
                     letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                 )
@@ -136,12 +146,12 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Tarjeta principal de credenciales (blanco puro)
+            // Tarjeta principal de credenciales adaptada al tema del sistema
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, BiosurOutline),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
@@ -187,10 +197,7 @@ fun LoginScreen(
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = BiosurOutline
-                        )
+                        colors = textFieldColors
                     )
 
                     AnimatedVisibility(
@@ -206,7 +213,7 @@ fun LoginScreen(
                         )
                     }
 
-                    // Insignia reactiva de menor privilegio cuando se detecta dominio autorizado
+                    // Insignia reactiva de menor privilegio
                     AnimatedVisibility(
                         visible = uiState.rolDetectado != null && uiState.errorEmail == null,
                         enter = fadeIn(),
@@ -253,7 +260,8 @@ fun LoginScreen(
                                 Text(
                                     text = if (uiState.passwordVisible) "Ocultar" else "Mostrar",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.primary
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
                         },
@@ -269,10 +277,7 @@ fun LoginScreen(
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = BiosurOutline
-                        )
+                        colors = textFieldColors
                     )
 
                     AnimatedVisibility(
@@ -331,7 +336,8 @@ fun LoginScreen(
                             .fillMaxWidth()
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
                         ),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -339,7 +345,7 @@ fun LoginScreen(
                             text = "INGRESAR AL SISTEMA",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.onPrimary
                         )
                     }
 
@@ -349,7 +355,7 @@ fun LoginScreen(
                     Text(
                         text = "Cuentas institucionales autorizadas:",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontWeight = FontWeight.Medium
                     )
 
@@ -361,21 +367,33 @@ fun LoginScreen(
                     ) {
                         SuggestionChip(
                             onClick = { viewModel.usarCuentaDemo("f.barra@biosur.cl") },
-                            label = { Text("@biosur.cl (Terreno)", style = MaterialTheme.typography.labelSmall) },
+                            label = {
+                                Text(
+                                    text = "@biosur.cl",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
                             colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = Color(0xFFF1F5F9)
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             ),
-                            border = BorderStroke(1.dp, BiosurOutline),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                             modifier = Modifier.weight(1f)
                         )
 
                         SuggestionChip(
                             onClick = { viewModel.usarCuentaDemo("jefatura@administracion.biosur.cl") },
-                            label = { Text("@administracion.biosur.cl", style = MaterialTheme.typography.labelSmall) },
+                            label = {
+                                Text(
+                                    text = "@administracion",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            },
                             colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = Color(0xFFF1F5F9)
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
                             ),
-                            border = BorderStroke(1.dp, BiosurOutline),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -393,14 +411,14 @@ fun LoginScreen(
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = "Política de denegación por defecto activa: cualquier dirección externa a la lista blanca es rechazada de forma inmediata.",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
             }
