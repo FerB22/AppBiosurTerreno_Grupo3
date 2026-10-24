@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Person
@@ -44,12 +46,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appinventario.model.Usuario
-import com.example.appinventario.ui.theme.BiosurOutline
 import kotlinx.coroutines.launch
 
 /**
  * Pantalla de configuración y preferencias del supervisor en terreno.
- * Muestra el estado de la sesión activa, privilegios asignados y persistencia local.
+ * Muestra el estado de la sesión activa, privilegios asignados y persistencia local con desplazamiento vertical completo.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +64,7 @@ fun ConfiguracionScreen(
     var supervisor by remember { mutableStateOf(supervisorInicial) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
@@ -80,7 +82,9 @@ fun ConfiguracionScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
+                .verticalScroll(scrollState)
+                .padding(horizontal = 16.dp, vertical = 16.dp)
+                .padding(bottom = 36.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Tarjeta 1: Sesión Institucional y Menor Privilegio
@@ -98,7 +102,7 @@ fun ConfiguracionScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "Sesión institucional activa",
+                            text = "Sesión activa",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -114,8 +118,8 @@ fun ConfiguracionScreen(
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondary,
-                                    letterSpacing = 1.sp,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    letterSpacing = 0.8.sp,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                 )
                             }
                         }
