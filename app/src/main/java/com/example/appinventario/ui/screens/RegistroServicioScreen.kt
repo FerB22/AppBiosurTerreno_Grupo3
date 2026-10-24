@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,10 +31,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,6 +46,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -219,34 +224,123 @@ fun RegistroServicioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Selector tipo de faena (Material 3 Exposed Dropdown Menu)
+            // 1. Selector tipo de faena (Material 3 Exposed Dropdown Menu personalizado)
             ExposedDropdownMenuBox(
                 expanded = dropdownExpanded,
                 onExpandedChange = { dropdownExpanded = it }
             ) {
+                val (iconoActual, _, colorActual) = when (uiState.tipoServicio) {
+                    TipoServicio.FOSA_SEPTICA -> Triple(Icons.Default.Info, "Succión de lodos, desagote y sanitizado", MaterialTheme.colorScheme.primary)
+                    TipoServicio.PLANTA_ELEVADORA -> Triple(Icons.Default.Settings, "Mantenimiento electromecánico de bombas", MaterialTheme.colorScheme.secondary)
+                    TipoServicio.OBRA_CIVIL -> Triple(Icons.AutoMirrored.Filled.List, "Cámaras, tuberías y obras sanitarias", MaterialTheme.colorScheme.tertiary)
+                    TipoServicio.EMERGENCIA -> Triple(Icons.Default.Warning, "Respuesta prioritaria ante contingencia", MaterialTheme.colorScheme.error)
+                }
+
                 OutlinedTextField(
                     value = uiState.tipoServicio.etiqueta,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Tipo de faena sanitaria") },
+                    leadingIcon = {
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = colorActual.copy(alpha = 0.15f),
+                            modifier = Modifier.size(34.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = iconoActual,
+                                    contentDescription = null,
+                                    tint = colorActual,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(14.dp)
                 )
+
                 ExposedDropdownMenu(
                     expanded = dropdownExpanded,
-                    onDismissRequest = { dropdownExpanded = false }
+                    onDismissRequest = { dropdownExpanded = false },
+                    modifier = Modifier
+                        .exposedDropdownSize(matchTextFieldWidth = true)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
                 ) {
-                    TipoServicio.entries.forEach { tipo ->
+                    TipoServicio.entries.forEachIndexed { index, tipo ->
+                        val isSelected = uiState.tipoServicio == tipo
+                        val (iconoItem, subtituloItem, colorItem) = when (tipo) {
+                            TipoServicio.FOSA_SEPTICA -> Triple(Icons.Default.Info, "Succión de lodos, desagote y sanitizado", MaterialTheme.colorScheme.primary)
+                            TipoServicio.PLANTA_ELEVADORA -> Triple(Icons.Default.Settings, "Mantenimiento electromecánico de bombas", MaterialTheme.colorScheme.secondary)
+                            TipoServicio.OBRA_CIVIL -> Triple(Icons.AutoMirrored.Filled.List, "Cámaras, tuberías y obras sanitarias", MaterialTheme.colorScheme.tertiary)
+                            TipoServicio.EMERGENCIA -> Triple(Icons.Default.Warning, "Respuesta prioritaria ante contingencia", MaterialTheme.colorScheme.error)
+                        }
+
                         DropdownMenuItem(
-                            text = { Text(tipo.etiqueta) },
+                            text = {
+                                Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                                    Text(
+                                        text = tipo.etiqueta,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = subtituloItem,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            },
+                            leadingIcon = {
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = colorItem.copy(alpha = if (isSelected) 0.22f else 0.12f),
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = iconoItem,
+                                            contentDescription = null,
+                                            tint = colorItem,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            trailingIcon = if (isSelected) {
+                                {
+                                    Icon(
+                                        imageVector = Icons.Default.CheckCircle,
+                                        contentDescription = "Seleccionado",
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            } else null,
                             onClick = {
                                 viewModel.onTipoServicioChange(tipo)
                                 dropdownExpanded = false
-                            }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (isSelected) {
+                                        Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f))
+                                    } else Modifier
+                                )
                         )
+                        if (index < TipoServicio.entries.size - 1) {
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 12.dp),
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                            )
+                        }
                     }
                 }
             }
