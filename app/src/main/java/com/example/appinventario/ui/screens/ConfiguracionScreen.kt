@@ -123,11 +123,10 @@ fun ConfiguracionScreen(
                                 shape = RoundedCornerShape(6.dp)
                             ) {
                                 Text(
-                                    text = usuarioActivo.rol.titulo.uppercase(),
+                                    text = usuarioActivo.rol.titulo,
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSecondary,
-                                    letterSpacing = 0.8.sp,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                                 )
                             }
@@ -197,11 +196,10 @@ fun ConfiguracionScreen(
                             shape = RoundedCornerShape(6.dp)
                         ) {
                             Text(
-                                text = modoTemaActual.etiqueta.uppercase(),
+                                text = modoTemaActual.etiqueta,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
-                                letterSpacing = 0.8.sp,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                             )
                         }

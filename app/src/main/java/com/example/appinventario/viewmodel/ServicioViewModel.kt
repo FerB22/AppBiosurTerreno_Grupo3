@@ -82,7 +82,7 @@ class ServicioViewModel : ViewModel() {
         val error = if (nuevasHoras.isBlank()) {
             "Ingrese las horas hombre trabajadas"
         } else if (horasDouble == null || horasDouble <= 0.0) {
-            "Las horas deben ser mayores a 0"
+            "Las horas deben ser mayores que 0"
         } else if (horasDouble > 24.0) {
             "El turno no puede exceder las 24 horas"
         } else {

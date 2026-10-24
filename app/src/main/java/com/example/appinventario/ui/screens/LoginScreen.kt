@@ -126,11 +126,10 @@ fun LoginScreen(
                 shadowElevation = 0.dp
             ) {
                 Text(
-                    text = "ACCESO INSTITUCIONAL",
+                    text = "Acceso institucional",
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSecondary,
-                    letterSpacing = 1.2.sp,
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
@@ -138,7 +137,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = "Sistema de Gestión Operacional en Terreno",
+                text = "Sistema de gestión operacional en terreno",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -342,7 +341,7 @@ fun LoginScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "INGRESAR AL SISTEMA",
+                            text = "Ingresar al sistema",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimary

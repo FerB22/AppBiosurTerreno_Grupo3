@@ -230,25 +230,25 @@ fun DetalleServicioScreen(
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 TarjetaFotoPericial(
-                                    titulo = "ESTADO INICIAL (ANTES)",
+                                    titulo = "Estado inicial (antes)",
                                     uriString = servicio.fotoAntesUri,
                                     modifier = Modifier.weight(1f),
                                     onClick = if (servicio.fotoAntesUri != null) {
                                         {
                                             fotoModalUri = servicio.fotoAntesUri
-                                            fotoModalTitulo = "Evidencia inicial (Antes)"
+                                            fotoModalTitulo = "Evidencia inicial (antes)"
                                         }
                                     } else null
                                 )
 
                                 TarjetaFotoPericial(
-                                    titulo = "ESTADO FINAL (DESPUÉS)",
+                                    titulo = "Estado final (después)",
                                     uriString = servicio.fotoDespuesUri,
                                     modifier = Modifier.weight(1f),
                                     onClick = if (servicio.fotoDespuesUri != null) {
                                         {
                                             fotoModalUri = servicio.fotoDespuesUri
-                                            fotoModalTitulo = "Evidencia final (Después)"
+                                            fotoModalTitulo = "Evidencia final (después)"
                                         }
                                     } else null
                                 )
@@ -306,7 +306,7 @@ fun DetalleServicioScreen(
                             monto = "35 000 CLP"
                         )
                         FilaCosto(
-                            concepto = "Traslado camión limpiafosas",
+                            concepto = "Traslado de camión limpiafosas",
                             monto = "25 000 CLP"
                         )
 
@@ -493,7 +493,7 @@ fun TarjetaFotoPericial(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = if (uriString != null) "Fotografía capturada\n(Sin vista previa)" else "Sin fotografía",
+                    text = if (uriString != null) "Fotografía capturada\n(sin vista previa)" else "Sin fotografía",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,

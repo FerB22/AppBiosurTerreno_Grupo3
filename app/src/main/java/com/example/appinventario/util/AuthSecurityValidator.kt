@@ -57,7 +57,7 @@ object AuthSecurityValidator {
         // Aplicación estricta de Denegación por Defecto (Default Deny)
         if (dominio !in DOMINIOS_PERMITIDOS) {
             return ValidacionCredencialesResult.Denegado(
-                "Acceso denegado por defecto: El dominio institucional '@$dominio' no está autorizado. Ingrese una cuenta @biosur.cl o @administracion.biosur.cl."
+                "Acceso denegado por defecto: el dominio institucional '@$dominio' no está autorizado. Ingrese una cuenta @biosur.cl o @administracion.biosur.cl."
             )
         }
 

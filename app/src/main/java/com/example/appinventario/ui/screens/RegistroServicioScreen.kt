@@ -488,7 +488,7 @@ fun RegistroServicioScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                             }
-                            Text(if (uiState.fotoAntesUri != null) "Foto Antes ✓" else "Foto Antes")
+                            Text(if (uiState.fotoAntesUri != null) "Foto antes ✓" else "Foto antes")
                         }
 
                         OutlinedButton(
@@ -505,7 +505,7 @@ fun RegistroServicioScreen(
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
                             }
-                            Text(if (uiState.fotoDespuesUri != null) "Foto Después ✓" else "Foto Después")
+                            Text(if (uiState.fotoDespuesUri != null) "Foto después ✓" else "Foto después")
                         }
                     }
 
@@ -527,7 +527,7 @@ fun RegistroServicioScreen(
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .clickable {
                                             fotoModalUri = uiState.fotoAntesUri
-                                            fotoModalTitulo = "Evidencia inicial (Antes)"
+                                            fotoModalTitulo = "Evidencia inicial (antes)"
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -580,7 +580,7 @@ fun RegistroServicioScreen(
                                         .background(MaterialTheme.colorScheme.surfaceVariant)
                                         .clickable {
                                             fotoModalUri = uiState.fotoDespuesUri
-                                            fotoModalTitulo = "Evidencia final (Después)"
+                                            fotoModalTitulo = "Evidencia final (después)"
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {

@@ -102,11 +102,10 @@ fun HomeScreen(
                             shadowElevation = 0.dp
                         ) {
                             Text(
-                                text = "TERRENO",
+                                text = "Terreno",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSecondary,
-                                letterSpacing = 1.2.sp,
                                 modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                             )
                         }
