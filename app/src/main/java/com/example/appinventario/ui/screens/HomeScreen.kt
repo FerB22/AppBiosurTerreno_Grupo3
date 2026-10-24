@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -119,8 +120,8 @@ fun HomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNuevoServicioClick,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(
@@ -222,7 +223,7 @@ fun HomeScreen(
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 96.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(serviciosFiltrados, key = { it.id }) { servicio ->
@@ -298,43 +299,59 @@ fun ServicioCard(
                 Text(
                     text = "${servicio.fecha} · ${servicio.horaInicio}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     if (servicio.latitud != null && servicio.longitud != null) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("GPS", style = MaterialTheme.typography.labelSmall) },
-                            icon = {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = "GPS capturado",
-                                    modifier = Modifier.size(14.dp)
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    modifier = Modifier.size(12.dp)
                                 )
-                            },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                            ),
-                            border = null
-                        )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "GPS",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
                     }
                     if (servicio.fotoAntesUri != null || servicio.fotoDespuesUri != null) {
-                        SuggestionChip(
-                            onClick = {},
-                            label = { Text("Foto", style = MaterialTheme.typography.labelSmall) },
-                            icon = {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = MaterialTheme.colorScheme.tertiaryContainer
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
                                 Icon(
                                     imageVector = Icons.Default.CheckCircle,
                                     contentDescription = "Evidencia fotográfica",
-                                    modifier = Modifier.size(14.dp)
+                                    tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    modifier = Modifier.size(12.dp)
                                 )
-                            },
-                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                            ),
-                            border = null
-                        )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Foto",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -347,20 +364,33 @@ fun EstadoBadge(
     estado: EstadoServicio,
     modifier: Modifier = Modifier
 ) {
+    val isDark = isSystemInDarkTheme()
     val (bgColor, textColor) = when (estado) {
-        EstadoServicio.EN_PROCESO -> Color(0xFFE0F2FE) to Color(0xFF0284C7)
-        EstadoServicio.FINALIZADO -> Color(0xFFEBF5DE) to Color(0xFF2E6A44)
-        EstadoServicio.PENDIENTE_REVISION -> Color(0xFFF1F5F9) to Color(0xFF475569)
+        EstadoServicio.EN_PROCESO -> if (isDark) {
+            Color(0xFF0C4A6E) to Color(0xFF7DD3FC)
+        } else {
+            Color(0xFFE0F2FE) to Color(0xFF0284C7)
+        }
+        EstadoServicio.FINALIZADO -> if (isDark) {
+            Color(0xFF14532D) to Color(0xFF86EFAC)
+        } else {
+            Color(0xFFEBF5DE) to Color(0xFF2E6A44)
+        }
+        EstadoServicio.PENDIENTE_REVISION -> if (isDark) {
+            Color(0xFF78350F) to Color(0xFFFDE68A)
+        } else {
+            Color(0xFFFEF3C7) to Color(0xFFB45309)
+        }
     }
 
-    Card(
+    Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = bgColor)
+        shape = RoundedCornerShape(6.dp),
+        color = bgColor
     ) {
         Text(
             text = estado.etiqueta,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.SemiBold,
             color = textColor

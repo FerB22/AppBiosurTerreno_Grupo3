@@ -34,9 +34,9 @@ val BiosurOutline = Color(0xFFCBD5E1)             // Borde definido sutil
 
 // Paleta para Modo Oscuro (Dark Theme) con alto contraste WCAG
 val BiosurPrimaryDark = Color(0xFFFF8533)          // Naranja legible sobre fondos oscuros
-val BiosurOnPrimaryDark = Color(0xFF3B1500)
-val BiosurPrimaryContainerDark = Color(0xFF753200)
-val BiosurOnPrimaryContainerDark = Color(0xFFFFDBC9)
+val BiosurOnPrimaryDark = Color(0xFFFFFFFF)       // Blanco puro para texto sobre naranja en modo oscuro
+val BiosurPrimaryContainerDark = Color(0xFFEB6819) // Naranja corporativo vibrante para contenedores destacados
+val BiosurOnPrimaryContainerDark = Color(0xFFFFFFFF)
 
 val BiosurSecondaryDark = Color(0xFF78B83E)        // Verde sanitario brillante para fondos oscuros
 val BiosurOnSecondaryDark = Color(0xFF132B04)

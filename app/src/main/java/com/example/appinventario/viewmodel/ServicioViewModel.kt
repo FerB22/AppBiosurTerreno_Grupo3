@@ -193,6 +193,34 @@ class ServicioViewModel : ViewModel() {
             latitud = -37.4697,
             longitud = -72.3537,
             estado = EstadoServicio.FINALIZADO
+        ),
+        Servicio(
+            id = 4L,
+            fecha = "16/10/2026",
+            horaInicio = "09:00",
+            horaTermino = "15:30",
+            supervisor = "Fernando Barra Muñoz",
+            tipoServicio = TipoServicio.OBRA_CIVIL,
+            descripcion = "Construcción de cámara desgrasadora e instalación de tubería PVC de 110 mm en Parque Industrial Coronel.",
+            horasTrabajadas = 6.5,
+            costoEstimado = 297500.0,
+            latitud = -37.0167,
+            longitud = -73.1333,
+            estado = EstadoServicio.PENDIENTE_REVISION
+        ),
+        Servicio(
+            id = 5L,
+            fecha = "16/10/2026",
+            horaInicio = "11:00",
+            horaTermino = "16:00",
+            supervisor = "Esteban Medina",
+            tipoServicio = TipoServicio.PLANTA_ELEVADORA,
+            descripcion = "Inspección preventiva y cambio de sellos mecánicos en estación elevadora Talcahuano Puerto.",
+            horasTrabajadas = 5.0,
+            costoEstimado = 225000.0,
+            latitud = -36.7249,
+            longitud = -73.1168,
+            estado = EstadoServicio.EN_PROCESO
         )
     )
 }
