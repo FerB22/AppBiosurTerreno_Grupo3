@@ -6,8 +6,10 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -224,11 +226,8 @@ fun RegistroServicioScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Selector tipo de faena (Material 3 Exposed Dropdown Menu personalizado)
-            ExposedDropdownMenuBox(
-                expanded = dropdownExpanded,
-                onExpandedChange = { dropdownExpanded = it }
-            ) {
+            // 1. Selector tipo de faena personalizado con ancho idéntico al campo
+            Column(modifier = Modifier.fillMaxWidth()) {
                 val (iconoActual, _, colorActual) = when (uiState.tipoServicio) {
                     TipoServicio.FOSA_SEPTICA -> Triple(Icons.Default.Info, "Succión de lodos, desagote y sanitizado", MaterialTheme.colorScheme.primary)
                     TipoServicio.PLANTA_ELEVADORA -> Triple(Icons.Default.Settings, "Mantenimiento electromecánico de bombas", MaterialTheme.colorScheme.secondary)
@@ -236,110 +235,133 @@ fun RegistroServicioScreen(
                     TipoServicio.EMERGENCIA -> Triple(Icons.Default.Warning, "Respuesta prioritaria ante contingencia", MaterialTheme.colorScheme.error)
                 }
 
-                OutlinedTextField(
-                    value = uiState.tipoServicio.etiqueta,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Tipo de faena sanitaria") },
-                    leadingIcon = {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = colorActual.copy(alpha = 0.15f),
-                            modifier = Modifier.size(34.dp)
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = iconoActual,
-                                    contentDescription = null,
-                                    tint = colorActual,
-                                    modifier = Modifier.size(18.dp)
-                                )
-                            }
-                        }
-                    },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                )
-
-                ExposedDropdownMenu(
-                    expanded = dropdownExpanded,
-                    onDismissRequest = { dropdownExpanded = false },
-                    modifier = Modifier
-                        .exposedDropdownSize(matchTextFieldWidth = true)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
-                ) {
-                    TipoServicio.entries.forEachIndexed { index, tipo ->
-                        val isSelected = uiState.tipoServicio == tipo
-                        val (iconoItem, subtituloItem, colorItem) = when (tipo) {
-                            TipoServicio.FOSA_SEPTICA -> Triple(Icons.Default.Info, "Succión de lodos, desagote y sanitizado", MaterialTheme.colorScheme.primary)
-                            TipoServicio.PLANTA_ELEVADORA -> Triple(Icons.Default.Settings, "Mantenimiento electromecánico de bombas", MaterialTheme.colorScheme.secondary)
-                            TipoServicio.OBRA_CIVIL -> Triple(Icons.AutoMirrored.Filled.List, "Cámaras, tuberías y obras sanitarias", MaterialTheme.colorScheme.tertiary)
-                            TipoServicio.EMERGENCIA -> Triple(Icons.Default.Warning, "Respuesta prioritaria ante contingencia", MaterialTheme.colorScheme.error)
-                        }
-
-                        DropdownMenuItem(
-                            text = {
-                                Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                                    Text(
-                                        text = tipo.etiqueta,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                                        color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Text(
-                                        text = subtituloItem,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = uiState.tipoServicio.etiqueta,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Tipo de faena sanitaria") },
+                        leadingIcon = {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = colorActual.copy(alpha = 0.15f),
+                                modifier = Modifier.size(34.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = iconoActual,
+                                        contentDescription = null,
+                                        tint = colorActual,
+                                        modifier = Modifier.size(18.dp)
                                     )
                                 }
-                            },
-                            leadingIcon = {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = colorItem.copy(alpha = if (isSelected) 0.22f else 0.12f),
-                                    modifier = Modifier.size(36.dp)
+                            }
+                        },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    )
+
+                    // Capa táctil transparente que cubre todo el campo para abrir/cerrar el menú
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(14.dp))
+                            .clickable { dropdownExpanded = !dropdownExpanded }
+                    )
+                }
+
+                // Opciones desplegables que ocupan exactamente el mismo ancho del campo
+                AnimatedVisibility(
+                    visible = dropdownExpanded,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            TipoServicio.entries.forEachIndexed { index, tipo ->
+                                val isSelected = uiState.tipoServicio == tipo
+                                val (iconoItem, subtituloItem, colorItem) = when (tipo) {
+                                    TipoServicio.FOSA_SEPTICA -> Triple(Icons.Default.Info, "Succión de lodos, desagote y sanitizado", MaterialTheme.colorScheme.primary)
+                                    TipoServicio.PLANTA_ELEVADORA -> Triple(Icons.Default.Settings, "Mantenimiento electromecánico de bombas", MaterialTheme.colorScheme.secondary)
+                                    TipoServicio.OBRA_CIVIL -> Triple(Icons.AutoMirrored.Filled.List, "Cámaras, tuberías y obras sanitarias", MaterialTheme.colorScheme.tertiary)
+                                    TipoServicio.EMERGENCIA -> Triple(Icons.Default.Warning, "Respuesta prioritaria ante contingencia", MaterialTheme.colorScheme.error)
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            viewModel.onTipoServicioChange(tipo)
+                                            dropdownExpanded = false
+                                        }
+                                        .then(
+                                            if (isSelected) {
+                                                Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f))
+                                            } else Modifier
+                                        )
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(contentAlignment = Alignment.Center) {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = colorItem.copy(alpha = if (isSelected) 0.22f else 0.12f),
+                                        modifier = Modifier.size(38.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Icon(
+                                                imageVector = iconoItem,
+                                                contentDescription = null,
+                                                tint = colorItem,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.width(12.dp))
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = tipo.etiqueta,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = subtituloItem,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+
+                                    if (isSelected) {
+                                        Spacer(modifier = Modifier.width(8.dp))
                                         Icon(
-                                            imageVector = iconoItem,
-                                            contentDescription = null,
-                                            tint = colorItem,
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "Seleccionado",
+                                            tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier.size(20.dp)
                                         )
                                     }
                                 }
-                            },
-                            trailingIcon = if (isSelected) {
-                                {
-                                    Icon(
-                                        imageVector = Icons.Default.CheckCircle,
-                                        contentDescription = "Seleccionado",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(20.dp)
+
+                                if (index < TipoServicio.entries.size - 1) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(horizontal = 14.dp),
+                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
                                     )
                                 }
-                            } else null,
-                            onClick = {
-                                viewModel.onTipoServicioChange(tipo)
-                                dropdownExpanded = false
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(
-                                    if (isSelected) {
-                                        Modifier.background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.25f))
-                                    } else Modifier
-                                )
-                        )
-                        if (index < TipoServicio.entries.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(horizontal = 12.dp),
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
-                            )
+                            }
                         }
                     }
                 }
