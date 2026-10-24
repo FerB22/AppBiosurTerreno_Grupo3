@@ -4,11 +4,13 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +26,8 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,15 +41,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.util.CameraUtil
 
@@ -59,6 +70,9 @@ fun DetalleServicioScreen(
     onVolverClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+    var fotoModalUri by remember { mutableStateOf<String?>(null) }
+    var fotoModalTitulo by remember { mutableStateOf("") }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -218,13 +232,25 @@ fun DetalleServicioScreen(
                                 TarjetaFotoPericial(
                                     titulo = "ESTADO INICIAL (ANTES)",
                                     uriString = servicio.fotoAntesUri,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    onClick = if (servicio.fotoAntesUri != null) {
+                                        {
+                                            fotoModalUri = servicio.fotoAntesUri
+                                            fotoModalTitulo = "Evidencia inicial (Antes)"
+                                        }
+                                    } else null
                                 )
 
                                 TarjetaFotoPericial(
                                     titulo = "ESTADO FINAL (DESPUÉS)",
                                     uriString = servicio.fotoDespuesUri,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    onClick = if (servicio.fotoDespuesUri != null) {
+                                        {
+                                            fotoModalUri = servicio.fotoDespuesUri
+                                            fotoModalTitulo = "Evidencia final (Después)"
+                                        }
+                                    } else null
                                 )
                             }
                         } else {
@@ -309,13 +335,81 @@ fun DetalleServicioScreen(
             }
         }
     }
+
+    // Modal de visualización de imagen completa
+    if (fotoModalUri != null) {
+        val bitmapCompleto = remember(fotoModalUri) {
+            CameraUtil.cargarBitmapDesdeUri(context, fotoModalUri, reqWidth = 1600, reqHeight = 1600)
+        }
+        Dialog(
+            onDismissRequest = { fotoModalUri = null },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.94f)
+                    .fillMaxHeight(0.85f),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = fotoModalTitulo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (bitmapCompleto != null) {
+                            Image(
+                                bitmap = bitmapCompleto,
+                                contentDescription = fotoModalTitulo,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = "No se pudo cargar la imagen",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Button(
+                        onClick = { fotoModalUri = null },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Cerrar")
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
 fun TarjetaFotoPericial(
     titulo: String,
     uriString: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val bitmap = remember(uriString) {
@@ -343,16 +437,51 @@ fun TarjetaFotoPericial(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (bitmap != null) {
-            Image(
-                bitmap = bitmap,
-                contentDescription = titulo,
-                contentScale = ContentScale.Crop,
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(140.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
-            )
+                    .then(
+                        if (onClick != null) Modifier.clickable { onClick() } else Modifier
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    bitmap = bitmap,
+                    contentDescription = titulo,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+                if (onClick != null) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(6.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color.Black.copy(alpha = 0.65f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(11.dp)
+                            )
+                            Spacer(modifier = Modifier.width(3.dp))
+                            Text(
+                                text = "Ampliar",
+                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+            }
         } else {
             Box(
                 modifier = Modifier

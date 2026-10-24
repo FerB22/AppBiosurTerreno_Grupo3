@@ -580,26 +580,13 @@ fun RegistroServicioScreen(
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = fotoModalTitulo,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        IconButton(onClick = { fotoModalUri = null }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "Cerrar",
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = fotoModalTitulo,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
