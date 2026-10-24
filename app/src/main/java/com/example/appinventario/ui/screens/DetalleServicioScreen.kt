@@ -1,7 +1,11 @@
 package com.example.appinventario.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -28,19 +32,25 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.appinventario.model.Servicio
+import com.example.appinventario.util.CameraUtil
 
 /**
- * Pantalla que detalla el costo económico y la trazabilidad técnica de una faena.
+ * Pantalla que detalla el costo económico, la trazabilidad técnica y la evidencia fotográfica de una faena.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,25 +79,15 @@ fun DetalleServicioScreen(
         modifier = modifier
     ) { innerPadding ->
         if (servicio == null) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "No se encontró el servicio solicitado",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.outline
+                    text = "Orden de faena no encontrada",
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         } else {
@@ -99,7 +99,7 @@ fun DetalleServicioScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Cabecera del tipo de servicio
+                // Tarjeta 1: Cabecera y datos de la orden
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
@@ -107,7 +107,7 @@ fun DetalleServicioScreen(
                         containerColor = MaterialTheme.colorScheme.surface
                     ),
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -119,8 +119,10 @@ fun DetalleServicioScreen(
                                 text = servicio.tipoServicio.etiqueta,
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(1f)
                             )
+                            Spacer(modifier = Modifier.width(8.dp))
                             EstadoBadge(estado = servicio.estado)
                         }
 
@@ -187,14 +189,75 @@ fun DetalleServicioScreen(
                     }
                 }
 
-                // Estimación económica de la faena
+                // Tarjeta 2: Evidencia Fotográfica Pericial (IE 2.4.1)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Evidencia fotográfica pericial (IE 2.4.1)",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        val tieneFotos = servicio.fotoAntesUri != null || servicio.fotoDespuesUri != null
+
+                        if (tieneFotos) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                TarjetaFotoPericial(
+                                    titulo = "ESTADO INICIAL (ANTES)",
+                                    uriString = servicio.fotoAntesUri,
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                TarjetaFotoPericial(
+                                    titulo = "ESTADO FINAL (DESPUÉS)",
+                                    uriString = servicio.fotoDespuesUri,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Info,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "No se adjuntaron fotografías periciales en esta orden.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // Tarjeta 3: Estimación económica de la faena
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
@@ -243,6 +306,70 @@ fun DetalleServicioScreen(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun TarjetaFotoPericial(
+    titulo: String,
+    uriString: String?,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val bitmap = remember(uriString) {
+        CameraUtil.cargarBitmapDesdeUri(context, uriString)
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            shape = RoundedCornerShape(6.dp)
+        ) {
+            Text(
+                text = titulo,
+                style = MaterialTheme.typography.labelSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = titulo,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp))
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(140.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (uriString != null) "Fotografía capturada\n(Sin vista previa)" else "Sin fotografía",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
+                )
             }
         }
     }

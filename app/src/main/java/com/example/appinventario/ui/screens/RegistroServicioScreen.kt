@@ -9,6 +9,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -53,6 +54,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -368,6 +371,63 @@ fun RegistroServicioScreen(
                                 Spacer(modifier = Modifier.width(4.dp))
                             }
                             Text(if (uiState.fotoDespuesUri != null) "Foto Después ✓" else "Foto Después")
+                        }
+                    }
+
+                    if (uiState.fotoAntesUri != null || uiState.fotoDespuesUri != null) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            if (uiState.fotoAntesUri != null) {
+                                val bmpAntes = remember(uiState.fotoAntesUri) {
+                                    CameraUtil.cargarBitmapDesdeUri(context, uiState.fotoAntesUri)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(110.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (bmpAntes != null) {
+                                        Image(
+                                            bitmap = bmpAntes,
+                                            contentDescription = "Foto antes",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Text("Antes capturada", style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
+                            }
+                            if (uiState.fotoDespuesUri != null) {
+                                val bmpDespues = remember(uiState.fotoDespuesUri) {
+                                    CameraUtil.cargarBitmapDesdeUri(context, uiState.fotoDespuesUri)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .height(110.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (bmpDespues != null) {
+                                        Image(
+                                            bitmap = bmpDespues,
+                                            contentDescription = "Foto después",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    } else {
+                                        Text("Después capturada", style = MaterialTheme.typography.labelSmall)
+                                    }
+                                }
+                            }
                         }
                     }
 
