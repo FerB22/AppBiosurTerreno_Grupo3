@@ -35,10 +35,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -375,13 +378,20 @@ fun RegistroServicioScreen(
                 }
             }
 
-            // 2. Descripción técnica del trabajo (validación por campo)
+            // 2. Descripción técnica del trabajo (validación por campo con ícono)
             Column {
                 OutlinedTextField(
                     value = uiState.descripcion,
                     onValueChange = { viewModel.onDescripcionChange(it) },
                     label = { Text("Descripción técnica del trabajo") },
                     placeholder = { Text("Ej: Limpieza de cámara desgrasadora y succión...") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = if (uiState.errorDescripcion != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     minLines = 3,
@@ -402,7 +412,7 @@ fun RegistroServicioScreen(
                 }
             }
 
-            // 3. Fila de Horas hombre y Costo de materiales
+            // 3. Fila de Horas hombre y Costo de materiales (validación por campo con íconos)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -413,6 +423,13 @@ fun RegistroServicioScreen(
                         onValueChange = { viewModel.onHorasChange(it) },
                         label = { Text("Horas hombre (HH)") },
                         placeholder = { Text("Ej: 4.5") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = if (uiState.errorHoras != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -438,10 +455,30 @@ fun RegistroServicioScreen(
                         onValueChange = { viewModel.onCostoMaterialesChange(it) },
                         label = { Text("Materiales (CLP)") },
                         placeholder = { Text("35000") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.ShoppingCart,
+                                contentDescription = null,
+                                tint = if (uiState.errorCostoMateriales != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                            )
+                        },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        isError = uiState.errorCostoMateriales != null
                     )
+                    AnimatedVisibility(
+                        visible = uiState.errorCostoMateriales != null,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Text(
+                            text = uiState.errorCostoMateriales.orEmpty(),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                        )
+                    }
                 }
             }
 

@@ -25,6 +25,7 @@ data class FormularioUiState(
     val horasTrabajadas: String = "",
     val errorHoras: String? = null,
     val costoMateriales: String = "35000",
+    val errorCostoMateriales: String? = null,
     val supervisor: String = "Fernando Barra Muñoz",
     val latitud: Double? = null,
     val longitud: Double? = null,
@@ -99,7 +100,24 @@ class ServicioViewModel : ViewModel() {
     }
 
     fun onCostoMaterialesChange(nuevoCosto: String) {
-        _formularioState.update { it.copy(costoMateriales = nuevoCosto) }
+        val costoDouble = nuevoCosto.toDoubleOrNull()
+        val error = if (nuevoCosto.isBlank()) {
+            "Ingrese el costo estimado o 0"
+        } else if (costoDouble == null || costoDouble < 0.0) {
+            "El costo debe ser un número igual o mayor a 0"
+        } else if (costoDouble > 50000000.0) {
+            "El costo excede el límite operativo de faena"
+        } else {
+            null
+        }
+
+        _formularioState.update { state ->
+            val updated = state.copy(
+                costoMateriales = nuevoCosto,
+                errorCostoMateriales = error
+            )
+            updated.copy(isFormValido = calcularValidez(updated))
+        }
     }
 
     fun onSupervisorChange(nuevoSupervisor: String) {
@@ -122,7 +140,9 @@ class ServicioViewModel : ViewModel() {
         val descValida = state.descripcion.isNotBlank() && state.descripcion.trim().length >= 10
         val horas = state.horasTrabajadas.toDoubleOrNull()
         val horasValidas = horas != null && horas in 0.1..24.0
-        return descValida && horasValidas
+        val costo = state.costoMateriales.toDoubleOrNull()
+        val costoValido = state.costoMateriales.isNotBlank() && costo != null && costo >= 0.0
+        return descValida && horasValidas && costoValido
     }
 
     fun registrarServicio(onSuccess: () -> Unit) {
