@@ -5,12 +5,14 @@ plugins {
 
 android {
     namespace = "com.example.appinventario"
-    compileSdk = 36
+    compileSdk {
+        version = release(37)
+    }
 
     defaultConfig {
         applicationId = "com.example.appinventario"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -18,20 +20,18 @@ android {
     }
 
     signingConfigs {
-        create("debugConfig") {
-            storeFile = file("${rootDir}/debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+        create("release") {
+            storeFile = file("biosur-release.jks")
+            storePassword = "biosur2026"
+            keyAlias = "biosur"
+            keyPassword = "biosur2026"
         }
     }
 
     buildTypes {
-        debug {
-            signingConfig = signingConfigs.getByName("debugConfig")
-        }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -47,8 +47,6 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
-    implementation(libs.androidx.activity.ktx)
-    implementation(libs.androidx.constraintlayout)
 
     // Jetpack Compose y Material 3 con BOM
     implementation(platform(libs.androidx.compose.bom))

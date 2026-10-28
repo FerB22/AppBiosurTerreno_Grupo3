@@ -25,7 +25,7 @@ data class Servicio(
  */
 enum class TipoServicio(val etiqueta: String) {
     FOSA_SEPTICA("Limpieza de fosa séptica"),
-    PLANTA_ELEVADORA("Mantenimiento planta elevadora"),
+    PLANTA_ELEVADORA("Mantenimiento de planta elevadora"),
     OBRA_CIVIL("Obra civil sanitaria"),
     EMERGENCIA("Atención de emergencia")
 }
