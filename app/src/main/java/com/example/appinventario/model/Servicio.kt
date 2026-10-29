@@ -1,9 +1,14 @@
 package com.example.appinventario.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * Modelo inmutable de dominio representativo de una faena u orden de servicio en terreno.
  */
+@Entity(tableName = "servicios")
 data class Servicio(
+    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val fecha: String,
     val horaInicio: String,
@@ -25,7 +30,7 @@ data class Servicio(
  */
 enum class TipoServicio(val etiqueta: String) {
     FOSA_SEPTICA("Limpieza de fosa séptica"),
-    PLANTA_ELEVADORA("Mantenimiento planta elevadora"),
+    PLANTA_ELEVADORA("Mantenimiento de planta elevadora"),
     OBRA_CIVIL("Obra civil sanitaria"),
     EMERGENCIA("Atención de emergencia")
 }
