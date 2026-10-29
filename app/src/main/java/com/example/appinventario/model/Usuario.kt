@@ -1,5 +1,8 @@
 package com.example.appinventario.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * Roles de usuario dentro del sistema según el principio de menor privilegio (Least Privilege).
  * Cada rol otorga únicamente las capacidades operativas requeridas para la labor respectiva.
@@ -24,7 +27,9 @@ enum class RolUsuario(
 /**
  * Representación inmutable del usuario autenticado en la sesión activa.
  */
+@Entity(tableName = "usuarios")
 data class Usuario(
+    @PrimaryKey
     val email: String,
     val nombre: String,
     val rol: RolUsuario

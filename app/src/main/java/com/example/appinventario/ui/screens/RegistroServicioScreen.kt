@@ -89,9 +89,9 @@ import com.google.android.gms.location.Priority
 
 /**
  * Pantalla de registro de nuevas faenas operativas en terreno.
- * Cumple con IE 2.1.2 (formularios con validación por campo),
- * IE 2.2.1 (ViewModel y StateFlow), IE 2.2.2 (animaciones de error)
- * e IE 2.4.1 (acceso nativo a Cámara y GPS).
+ * Cumple con formularios con validación por campo,
+ * ViewModel y StateFlow, animaciones de error
+ * Acceso nativo a Cámara y GPS.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -422,7 +422,7 @@ fun RegistroServicioScreen(
                         value = uiState.horasTrabajadas,
                         onValueChange = { viewModel.onHorasChange(it) },
                         label = { Text("Horas hombre (HH)") },
-                        placeholder = { Text("Ej: 4.5") },
+                        placeholder = { Text("Ej.: 4.5") },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
