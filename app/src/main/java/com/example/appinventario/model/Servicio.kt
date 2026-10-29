@@ -1,9 +1,14 @@
 package com.example.appinventario.model
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /**
  * Modelo inmutable de dominio representativo de una faena u orden de servicio en terreno.
  */
+@Entity(tableName = "servicios")
 data class Servicio(
+    @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val fecha: String,
     val horaInicio: String,

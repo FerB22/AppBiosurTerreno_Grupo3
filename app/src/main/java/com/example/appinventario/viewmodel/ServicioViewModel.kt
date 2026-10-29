@@ -6,9 +6,12 @@ import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.ModoTema
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.model.TipoServicio
+import com.example.appinventario.repository.ServicioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -36,18 +39,21 @@ data class FormularioUiState(
 )
 
 /**
- * ViewModel que desacopla la lógica de negocio y las validaciones de la interfaz visual.
- * Gestiona el estado reactivo mediante StateFlow.
+ * ViewModel desacoplado con persistencia fuera de línea integrada mediante Room.
  */
-class ServicioViewModel : ViewModel() {
+class ServicioViewModel(private val repository: ServicioRepository) : ViewModel() {
 
-    // Modo de tema visual (Claro, Según sistema, Oscuro)
+    // Modo de tema visual
     private val _modoTema = MutableStateFlow(ModoTema.SISTEMA)
     val modoTema: StateFlow<ModoTema> = _modoTema.asStateFlow()
 
-    // Lista en memoria para operación offline inmediata (se integrará con el repositorio Room de Esteban)
-    private val _servicios = MutableStateFlow<List<Servicio>>(generarDatosIniciales())
-    val servicios: StateFlow<List<Servicio>> = _servicios.asStateFlow()
+    // Lista reactiva conectada directamente al repositorio Room
+    val servicios: StateFlow<List<Servicio>> = repository.todosLosServicios
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     private val _formularioState = MutableStateFlow(FormularioUiState())
     val formularioState: StateFlow<FormularioUiState> = _formularioState.asStateFlow()
@@ -158,7 +164,7 @@ class ServicioViewModel : ViewModel() {
             val costoTotal = (horas * valorHora) + costoMat
 
             val nuevoServicio = Servicio(
-                id = System.currentTimeMillis(),
+                id = 0, // Room auto-generará la clave primaria al insertar
                 fecha = fechaActual,
                 horaInicio = horaActual,
                 horaTermino = horaActual,
@@ -174,82 +180,10 @@ class ServicioViewModel : ViewModel() {
                 estado = EstadoServicio.FINALIZADO
             )
 
-            _servicios.update { listOf(nuevoServicio) + it }
+            // Inserción en la base de datos persistente mediante el repositorio
+            repository.guardarServicio(nuevoServicio)
             _formularioState.update { FormularioUiState() } // Reiniciar formulario
             onSuccess()
         }
     }
-
-    private fun generarDatosIniciales(): List<Servicio> = listOf(
-        Servicio(
-            id = 1L,
-            fecha = "15/10/2026",
-            horaInicio = "08:30",
-            horaTermino = "12:30",
-            supervisor = "Fernando Barra Muñoz",
-            tipoServicio = TipoServicio.FOSA_SEPTICA,
-            descripcion = "Vaciado y succión de lodos en Planta Industrial Arauco. Volumen extraído: 15 m³.",
-            horasTrabajadas = 4.0,
-            costoEstimado = 210000.0, // 4 * 35 000 + 70 000
-            latitud = -36.8270,
-            longitud = -73.0503,
-            estado = EstadoServicio.FINALIZADO
-        ),
-        Servicio(
-            id = 2L,
-            fecha = "15/10/2026",
-            horaInicio = "14:00",
-            horaTermino = "17:00",
-            supervisor = "Fernando Barra Muñoz",
-            tipoServicio = TipoServicio.PLANTA_ELEVADORA,
-            descripcion = "Revisión de bomba sumergible en Planta Elevadora de Aguas Servidas (PEAS) Ñuble.",
-            horasTrabajadas = 3.0,
-            costoEstimado = 135000.0,
-            latitud = -36.6066,
-            longitud = -72.1034,
-            estado = EstadoServicio.EN_PROCESO
-        ),
-        Servicio(
-            id = 3L,
-            fecha = "14/10/2026",
-            horaInicio = "10:15",
-            horaTermino = "14:45",
-            supervisor = "Esteban Medina",
-            tipoServicio = TipoServicio.EMERGENCIA,
-            descripcion = "Desborde sanitario en faena Los Ángeles. Reemplazo de válvula check de retención.",
-            horasTrabajadas = 4.5,
-            costoEstimado = 225000.0,
-            latitud = -37.4697,
-            longitud = -72.3537,
-            estado = EstadoServicio.FINALIZADO
-        ),
-        Servicio(
-            id = 4L,
-            fecha = "16/10/2026",
-            horaInicio = "09:00",
-            horaTermino = "15:30",
-            supervisor = "Fernando Barra Muñoz",
-            tipoServicio = TipoServicio.OBRA_CIVIL,
-            descripcion = "Construcción de cámara desgrasadora e instalación de tubería PVC de 110 mm en Parque Industrial Coronel.",
-            horasTrabajadas = 6.5,
-            costoEstimado = 297500.0,
-            latitud = -37.0167,
-            longitud = -73.1333,
-            estado = EstadoServicio.PENDIENTE_REVISION
-        ),
-        Servicio(
-            id = 5L,
-            fecha = "16/10/2026",
-            horaInicio = "11:00",
-            horaTermino = "16:00",
-            supervisor = "Esteban Medina",
-            tipoServicio = TipoServicio.PLANTA_ELEVADORA,
-            descripcion = "Inspección preventiva y cambio de sellos mecánicos en estación elevadora Talcahuano Puerto.",
-            horasTrabajadas = 5.0,
-            costoEstimado = 225000.0,
-            latitud = -36.7249,
-            longitud = -73.1168,
-            estado = EstadoServicio.EN_PROCESO
-        )
-    )
 }
