@@ -62,10 +62,11 @@ import com.example.appinventario.R
 import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.model.TipoServicio
+import com.example.appinventario.viewmodel.ClimaUiState
 
 /**
  * Pantalla principal que despliega el historial de faenas operativas en terreno.
- * Cumple con IE 2.1.1 (jerarquía visual), IE 2.1.2 (adaptabilidad) e IE 2.2.2 (animaciones).
+ * Cumple con jerarquía visual, adaptabilidad e animaciones.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +74,8 @@ fun HomeScreen(
     servicios: List<Servicio>,
     onServicioClick: (Long) -> Unit,
     onNuevoServicioClick: () -> Unit,
+    clima: ClimaUiState = ClimaUiState.Cargando,
+    onReintentarClima: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var filtroSeleccionado by remember { mutableStateOf<TipoServicio?>(null) }
@@ -185,6 +188,13 @@ fun HomeScreen(
                     )
                 }
             }
+
+            // Tarjeta de clima en terreno (API externa Open-Meteo vía Retrofit)
+            TarjetaClimaFaena(
+                clima = clima,
+                onReintentar = onReintentarClima,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
 
             // Lista reactiva de servicios
             AnimatedVisibility(
@@ -394,5 +404,80 @@ fun EstadoBadge(
             fontWeight = FontWeight.SemiBold,
             color = textColor
         )
+    }
+}
+
+
+
+/**
+ * Tarjeta informativa con el clima actual en terreno, obtenido de la API externa Open-Meteo.
+ * Es independiente del listado de faenas: si la red falla, solo muestra un aviso con opción de reintento.
+ */
+@Composable
+private fun TarjetaClimaFaena(
+    clima: ClimaUiState,
+    onReintentar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            when (clima) {
+                is ClimaUiState.Cargando -> {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Consultando clima en terreno…",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                is ClimaUiState.Disponible -> {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Clima en terreno: ${"%.1f".format(clima.temperaturaC)} °C",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "${clima.descripcion} · viento ${"%.0f".format(clima.vientoKmH)} km/h",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+                is ClimaUiState.Error -> {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = clima.mensaje,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.weight(1f)
+                    )
+                    androidx.compose.material3.TextButton(onClick = onReintentar) {
+                        Text("Reintentar")
+                    }
+                }
+            }
+        }
     }
 }

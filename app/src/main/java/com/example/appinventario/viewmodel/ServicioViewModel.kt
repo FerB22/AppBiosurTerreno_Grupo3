@@ -6,6 +6,7 @@ import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.ModoTema
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.model.TipoServicio
+import com.example.appinventario.repository.ClimaRepository
 import com.example.appinventario.repository.ServicioRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -41,7 +42,39 @@ data class FormularioUiState(
 /**
  * ViewModel desacoplado con persistencia fuera de línea integrada mediante Room.
  */
-class ServicioViewModel(private val repository: ServicioRepository) : ViewModel() {
+class ServicioViewModel(
+    private val repository: ServicioRepository,
+    private val climaRepository: ClimaRepository? = null
+) : ViewModel() {
+
+    companion object {
+        // Coordenadas por defecto (Nacimiento, Biobío) cuando aún no hay una faena con GPS registrado
+        const val LATITUD_DEFECTO = -37.5021
+        const val LONGITUD_DEFECTO = -72.6732
+    }
+
+    // Clima en terreno obtenido desde la API externa pública (Open-Meteo)
+    private val _clima = MutableStateFlow<ClimaUiState>(ClimaUiState.Cargando)
+    val clima: StateFlow<ClimaUiState> = _clima.asStateFlow()
+
+    fun cargarClima(latitud: Double? = null, longitud: Double? = null) {
+        val repo = climaRepository
+        if (repo == null) {
+            _clima.value = ClimaUiState.Error("Servicio de clima no disponible")
+            return
+        }
+        _clima.value = ClimaUiState.Cargando
+        viewModelScope.launch {
+            repo.obtenerClima(latitud ?: LATITUD_DEFECTO, longitud ?: LONGITUD_DEFECTO).fold(
+                onSuccess = { c ->
+                    _clima.value = ClimaUiState.Disponible(c.temperaturaC, c.vientoKmH, c.descripcion)
+                },
+                onFailure = {
+                    _clima.value = ClimaUiState.Error("Sin conexión con el servicio de clima")
+                }
+            )
+        }
+    }
 
     // Modo de tema visual
     private val _modoTema = MutableStateFlow(ModoTema.SISTEMA)

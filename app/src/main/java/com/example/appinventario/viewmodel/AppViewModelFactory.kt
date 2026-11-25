@@ -2,7 +2,10 @@ package com.example.appinventario.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.appinventario.data.remote.RetrofitClient
+import com.example.appinventario.repository.ClimaRepository
 import com.example.appinventario.repository.ServicioRepository
+import com.example.appinventario.repository.UsuarioRemoteRepository
 import com.example.appinventario.util.UserPreferencesManager
 
 class AppViewModelFactory(
@@ -14,10 +17,10 @@ class AppViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(ServicioViewModel::class.java) -> {
-                ServicioViewModel(servicioRepository) as T
+                ServicioViewModel(servicioRepository, ClimaRepository(RetrofitClient.climaApi)) as T
             }
             modelClass.isAssignableFrom(AuthViewModel::class.java) -> {
-                AuthViewModel(preferencesManager) as T
+                AuthViewModel(preferencesManager, UsuarioRemoteRepository(RetrofitClient.usuarioApi)) as T
             }
             else -> throw IllegalArgumentException("ViewModel clase desconocida: ${modelClass.name}")
         }

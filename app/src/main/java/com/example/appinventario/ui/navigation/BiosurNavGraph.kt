@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -150,6 +151,7 @@ fun BiosurNavHost(
     val servicios by viewModel.servicios.collectAsState()
     val formularioUiState by viewModel.formularioState.collectAsState()
     val loginUiState by authViewModel.uiState.collectAsState()
+    val clima by viewModel.clima.collectAsState()
 
     NavHost(
         navController = navController,
@@ -175,8 +177,15 @@ fun BiosurNavHost(
 
         // Pantalla 1: Historial de Órdenes
         composable(Screen.Home.route) {
+            // Consulta de la API externa de clima (usa el GPS de la última faena si existe)
+            LaunchedEffect(Unit) {
+                val ultimaConGps = servicios.firstOrNull { it.latitud != null && it.longitud != null }
+                viewModel.cargarClima(ultimaConGps?.latitud, ultimaConGps?.longitud)
+            }
             HomeScreen(
                 servicios = servicios,
+                clima = clima,
+                onReintentarClima = { viewModel.cargarClima() },
                 onServicioClick = { id ->
                     navController.navigate(Screen.Detalle.createRoute(id))
                 },

@@ -13,8 +13,11 @@ composeBom = "2024.04.01"
 activityCompose = "1.8.2"
 navigationCompose = "2.7.7"
 lifecycle = "2.7.0"
-room = "2.6.1"
+room = "2.7.2"
 datastore = "1.0.0"
+retrofit = "2.11.0"
+mockk = "1.13.12"
+coroutinesTest = "1.8.1"
 playServicesLocation = "21.2.0"
 ksp = "2.0.21-1.0.27"
 
@@ -46,6 +49,14 @@ androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lif
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
+
+# Red: Retrofit (microservicios Spring Boot y API externa)
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+
+# Pruebas unitarias con simulación de dependencias
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 
 # Recurso nativo: Geolocalización GPS
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }

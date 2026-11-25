@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.appinventario.model.ModoTema
 import com.example.appinventario.model.RolUsuario
 import com.example.appinventario.model.Usuario
+import com.example.appinventario.repository.LoginRemotoResult
+import com.example.appinventario.repository.UsuarioRemoteRepository
 import com.example.appinventario.util.AuthSecurityValidator
 import com.example.appinventario.util.UserPreferencesManager
 import com.example.appinventario.util.ValidacionCredencialesResult
@@ -29,14 +31,19 @@ data class LoginUiState(
     val rolDetectado: RolUsuario? = null,
     val isLoading: Boolean = false,
     val loginExitoso: Boolean = false,
-    val usuarioAutenticado: Usuario? = null
+    val usuarioAutenticado: Usuario? = null,
+    val sincronizadoConServidor: Boolean = false
 )
 
 /**
  * ViewModel que gestiona la autenticación de usuarios y la persistencia de preferencias/sesión con DataStore.
+ *
+ * Tras validar localmente las credenciales (denegación por defecto y menor privilegio), consulta al
+ * microservicio `ms-usuarios`. Si no hay conexión con el servidor, continúa con el respaldo local (offline-first).
  */
 class AuthViewModel(
-    private val preferencesManager: UserPreferencesManager
+    private val preferencesManager: UserPreferencesManager,
+    private val usuarioRemoto: UsuarioRemoteRepository? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -133,27 +140,55 @@ class AuthViewModel(
                 }
 
                 // Autenticación concedida con Menor Privilegio (Least Privilege)
-                val usuarioLogueado = Usuario(
+                val usuarioLocal = Usuario(
                     email = validacionEmail.emailSanitizado,
                     nombre = AuthSecurityValidator.inferirNombreDesdeEmail(validacionEmail.emailSanitizado),
                     rol = validacionEmail.rol
                 )
 
-                // Persistencia de la sesión en DataStore
-                viewModelScope.launch {
-                    preferencesManager.guardarSesionUsuario(usuarioLogueado.email)
+                if (usuarioRemoto == null) {
+                    completarLogin(usuarioLocal, sincronizado = false)
+                    return
                 }
 
+                // 2. Validación contra el microservicio ms-usuarios (Spring Boot)
                 _uiState.update { state ->
                     state.copy(
                         errorEmail = null,
                         errorPassword = null,
                         errorGeneral = null,
-                        usuarioAutenticado = usuarioLogueado,
-                        loginExitoso = true
+                        isLoading = true
                     )
                 }
+                viewModelScope.launch {
+                    when (val resultado = usuarioRemoto.login(usuarioLocal.email, usuarioLocal.nombre)) {
+                        is LoginRemotoResult.Exitoso -> completarLogin(resultado.usuario, sincronizado = true)
+                        is LoginRemotoResult.Rechazado -> _uiState.update { state ->
+                            state.copy(isLoading = false, errorGeneral = resultado.mensaje)
+                        }
+                        LoginRemotoResult.SinConexion -> completarLogin(usuarioLocal, sincronizado = false)
+                    }
+                }
             }
+        }
+    }
+
+    private fun completarLogin(usuario: Usuario, sincronizado: Boolean) {
+        // Persistencia de la sesión en DataStore
+        viewModelScope.launch {
+            preferencesManager.guardarSesionUsuario(usuario.email)
+        }
+
+        _uiState.update { state ->
+            state.copy(
+                errorEmail = null,
+                errorPassword = null,
+                errorGeneral = null,
+                isLoading = false,
+                usuarioAutenticado = usuario,
+                sincronizadoConServidor = sincronizado,
+                loginExitoso = true
+            )
         }
     }
 

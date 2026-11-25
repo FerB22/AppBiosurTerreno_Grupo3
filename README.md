@@ -2,7 +2,8 @@
 
 Aplicación móvil nativa Android desarrollada para la empresa **Biosur SpA**, especializada en servicios sanitarios industriales, mantenimiento de plantas elevadoras de aguas servidas (PEAS), limpieza de fosas sépticas y atención de contingencias sanitarias en la Región del Biobío.
 
-Proyecto correspondiente a la **Evaluación Parcial 2** de la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC).
+Proyecto correspondiente a la asignatura **DSY1105 – Desarrollo de Aplicaciones Móviles** (Duoc UC, Experiencia 2 y Experiencia 3 / Evaluación Parcial 4).
+Repositorio del *backend* en Spring Boot: [BiosurTerreno_Backend_Grupo3](https://github.com/FerB22/BiosurTerreno_Backend_Grupo3).
 
 ---
 
@@ -26,19 +27,27 @@ Proyecto correspondiente a la **Evaluación Parcial 2** de la asignatura **DSY11
   2. **Georreferenciación satelital (GPS):** API oficial de Google Play Services (`FusedLocationProviderClient`) con arquitectura de adquisición híbrida (lectura de caché `lastLocation`, adquisición activa satelital `getCurrentLocation` de alta precisión y respaldo operativo defensivo para interiores).
 * **Animaciones funcionales:** Desvanecimiento suave en mensajes de validación (`AnimatedVisibility` con `fadeIn`/`fadeOut`), animaciones cromáticas con `animateColorAsState` en el selector de tema y despliegue animado del catálogo de faenas sanitarias (`expandVertically`/`shrinkVertically`).
 
+* **Red y consumo de servicios REST (Retrofit + Gson):**
+  * **Microservicio de usuarios (`ms-usuarios`, puerto `8082`):** `POST /api/usuarios/login` y `GET /api/usuarios` conectados desde `UsuarioRemoteRepository` y `AuthViewModel` con respaldo local fuera de línea (*offline-first*).
+  * **Microservicio de servicios (`ms-servicios`, puerto `8081`):** `GET/POST/PUT/DELETE /api/servicios` en Spring Boot con persistencia H2.
+  * **API externa pública (Open-Meteo):** Consulta meteorológica en tiempo real (`GET https://api.open-meteo.com/v1/forecast`) integrada en `ClimaRepository` y desplegada en `HomeScreen` utilizando las coordenadas GPS de la faena sin interferir con los microservicios propios.
+* **Pruebas unitarias (JUnit 4 + MockK + Coroutines Test):** Batería de **56 pruebas** cubriendo validación de seguridad, `AuthViewModel`, `ServicioViewModel`, `ServicioRepository`, `UsuarioRemoteRepository` y `ClimaRepository`.
+
 ---
 
 ## Estructura modular del proyecto
 
 ```text
 com.example.appinventario
-├── model/                  # Entidades inmutables de dominio (Servicio, Usuario, ModoTema, Screen)
+├── data/remote/            # Cliente RetrofitClient, UsuarioApiService y ClimaApiService
+├── model/                  # Entidades Room e inmutables (Servicio, Usuario, ModoTema, Screen)
+├── repository/             # Repositorios locales (Room) y remotos (UsuarioRemoteRepository, ClimaRepository)
 ├── ui/
 │   ├── navigation/         # Grafo de navegación Compose adaptativo (BiosurNavGraph)
 │   ├── screens/            # Pantallas (LoginScreen, HomeScreen, RegistroServicioScreen, DetalleServicioScreen, ConfiguracionScreen)
 │   └── theme/              # Tokens de diseño Material 3 (Color, Theme, Type)
-├── util/                   # Utilidades de hardware y seguridad (CameraUtil, AuthSecurityValidator)
-└── viewmodel/              # Lógica de negocio y gestión de estado reactivo (ServicioViewModel, AuthViewModel)
+├── util/                   # Utilidades (CameraUtil, AuthSecurityValidator, ClimaUtil, UserPreferencesManager)
+└── viewmodel/              # Lógica de negocio y gestión de estado (ServicioViewModel, AuthViewModel, ClimaUiState)
 ```
 
 ---
@@ -61,7 +70,7 @@ adb install -r "app/build/outputs/apk/debug/app-debug.apk"
 ```
 
 ### 2. Compilación de producción firmada (Release)
-El proyecto incluye configuración de firmado oficial con el almacén de claves institucional `biosur-release.jks`:
+El proyecto incluye configuración de firmado oficial con el almacén de claves institucional [`app/biosur-release.jks`](app/biosur-release.jks):
 ```powershell
 ./gradlew assembleRelease --no-daemon
 ```
@@ -71,7 +80,15 @@ Instalación mediante ADB:
 adb install -r "app/build/outputs/apk/release/app-release.apk"
 ```
 
-### 3. Ejecución de pruebas unitarias
+### 3. Conexión con el *backend* local (Spring Boot)
+1. En [`BiosurTerreno_Backend_Grupo3`](https://github.com/FerB22/BiosurTerreno_Backend_Grupo3), iniciar `ms-usuarios` (`8082`) y `ms-servicios` (`8081`) con `.\mvnw.cmd spring-boot:run`.
+2. En emulador Android, la aplicación apunta automáticamente a `http://10.0.2.2:8082/` y `8081/`. En teléfono físico por USB, ejecutar:
+   ```powershell
+   adb reverse tcp:8082 tcp:8082
+   adb reverse tcp:8081 tcp:8081
+   ```
+
+### 4. Ejecución de pruebas unitarias
 ```powershell
 ./gradlew testDebugUnitTest
 ```
