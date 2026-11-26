@@ -1,28 +1,42 @@
 package com.example.appinventario.ui.navigation
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -42,13 +56,14 @@ import com.example.appinventario.viewmodel.ServicioViewModel
 data class DestinoNavegacion(
     val ruta: String,
     val titulo: String,
-    val icono: ImageVector
+    val iconoActivo: ImageVector,
+    val iconoInactivo: ImageVector
 )
 
 val DestinosPrincipales = listOf(
-    DestinoNavegacion(Screen.Home.route, "Órdenes", Icons.AutoMirrored.Filled.List),
-    DestinoNavegacion(Screen.Registro.route, "Registro", Icons.Default.AddCircle),
-    DestinoNavegacion(Screen.Configuracion.route, "Ajustes", Icons.Default.Settings)
+    DestinoNavegacion(Screen.Home.route, "Órdenes", Icons.Filled.Home, Icons.Outlined.Home),
+    DestinoNavegacion(Screen.Registro.route, "Registro", Icons.Filled.AddCircle, Icons.Outlined.Add),
+    DestinoNavegacion(Screen.Configuracion.route, "Ajustes", Icons.Filled.Settings, Icons.Outlined.Settings)
 )
 
 /**
@@ -56,6 +71,7 @@ val DestinosPrincipales = listOf(
  * Teléfonos compactos -> Barra inferior (NavigationBar).
  * Tabletas y pantallas extendidas -> Barra lateral (NavigationRail).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BiosurApp(
     windowWidthSizeClass: WindowWidthSizeClass,
@@ -66,6 +82,7 @@ fun BiosurApp(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val servicios by viewModel.servicios.collectAsState()
 
     val esPantallaExpandida = windowWidthSizeClass != WindowWidthSizeClass.Compact
     val mostrarBarra = DestinosPrincipales.any { it.ruta == currentRoute }
@@ -74,7 +91,7 @@ fun BiosurApp(
         // Diseño para Tableta / Pantalla horizontal (NavigationRail)
         Row(modifier = modifier.fillMaxSize()) {
             if (mostrarBarra) {
-                NavigationRail {
+                NavigationRail(containerColor = MaterialTheme.colorScheme.surface) {
                     DestinosPrincipales.forEach { destino ->
                         val seleccionado = currentRoute == destino.ruta
                         NavigationRailItem(
@@ -88,8 +105,26 @@ fun BiosurApp(
                                     restoreState = true
                                 }
                             },
-                            icon = { Icon(destino.icono, contentDescription = destino.titulo) },
-                            label = { Text(destino.titulo) }
+                            icon = {
+                                IconoDestinoNav(
+                                    destino = destino,
+                                    seleccionado = seleccionado,
+                                    totalOrdenes = servicios.size
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = destino.titulo,
+                                    fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            },
+                            colors = NavigationRailItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         )
                     }
                 }
@@ -108,23 +143,50 @@ fun BiosurApp(
             bottomBar = {
                 // Solo mostrar la barra inferior en destinos principales autenticados
                 if (mostrarBarra) {
-                    NavigationBar {
-                        DestinosPrincipales.forEach { destino ->
-                            val seleccionado = currentRoute == destino.ruta
-                            NavigationBarItem(
-                                selected = seleccionado,
-                                onClick = {
-                                    navController.navigate(destino.ruta) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
+                    Column {
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+                        )
+                        NavigationBar(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            tonalElevation = 0.dp
+                        ) {
+                            DestinosPrincipales.forEach { destino ->
+                                val seleccionado = currentRoute == destino.ruta
+                                NavigationBarItem(
+                                    selected = seleccionado,
+                                    onClick = {
+                                        navController.navigate(destino.ruta) {
+                                            popUpTo(navController.graph.findStartDestination().id) {
+                                                saveState = true
+                                            }
+                                            launchSingleTop = true
+                                            restoreState = true
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = { Icon(destino.icono, contentDescription = destino.titulo) },
-                                label = { Text(destino.titulo) }
-                            )
+                                    },
+                                    icon = {
+                                        IconoDestinoNav(
+                                            destino = destino,
+                                            seleccionado = seleccionado,
+                                            totalOrdenes = servicios.size
+                                        )
+                                    },
+                                    label = {
+                                        Text(
+                                            text = destino.titulo,
+                                            fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Normal
+                                        )
+                                    },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
+                                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                )
+                            }
                         }
                     }
                 }
@@ -135,9 +197,36 @@ fun BiosurApp(
                 navController = navController,
                 viewModel = viewModel,
                 authViewModel = authViewModel,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
             )
         }
+    }
+}
+
+@Composable
+private fun IconoDestinoNav(
+    destino: DestinoNavegacion,
+    seleccionado: Boolean,
+    totalOrdenes: Int
+) {
+    val vector = if (seleccionado) destino.iconoActivo else destino.iconoInactivo
+    if (destino.ruta == Screen.Home.route && totalOrdenes > 0) {
+        BadgedBox(
+            badge = {
+                Badge(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Text(text = if (totalOrdenes > 99) "99+" else "$totalOrdenes")
+                }
+            }
+        ) {
+            Icon(imageVector = vector, contentDescription = destino.titulo)
+        }
+    } else {
+        Icon(imageVector = vector, contentDescription = destino.titulo)
     }
 }
 
