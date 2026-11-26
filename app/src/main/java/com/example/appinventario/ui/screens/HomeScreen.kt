@@ -27,8 +27,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,7 +41,9 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
@@ -79,10 +84,17 @@ fun HomeScreen(
     modifier: Modifier = Modifier
 ) {
     var filtroSeleccionado by remember { mutableStateOf<TipoServicio?>(null) }
+    var textoBusqueda by remember { mutableStateOf("") }
 
-    val serviciosFiltrados = remember(servicios, filtroSeleccionado) {
-        if (filtroSeleccionado == null) servicios
-        else servicios.filter { it.tipoServicio == filtroSeleccionado }
+    val serviciosFiltrados = remember(servicios, filtroSeleccionado, textoBusqueda) {
+        servicios.filter { servicio ->
+            val coincideTipo = filtroSeleccionado == null || servicio.tipoServicio == filtroSeleccionado
+            val consulta = textoBusqueda.trim()
+            val coincideTexto = consulta.isBlank() ||
+                servicio.descripcion.contains(consulta, ignoreCase = true) ||
+                servicio.supervisor.contains(consulta, ignoreCase = true)
+            coincideTipo && coincideTexto
+        }
     }
 
     Scaffold(
@@ -114,6 +126,14 @@ fun HomeScreen(
                         }
                     }
                 },
+                actions = {
+                    IconButton(onClick = onReintentarClima) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Actualizar datos"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -139,6 +159,34 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Buscador en tiempo real por descripción o supervisor
+            OutlinedTextField(
+                value = textoBusqueda,
+                onValueChange = { textoBusqueda = it },
+                placeholder = { Text("Buscar por descripción o supervisor…") },
+                leadingIcon = {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                },
+                trailingIcon = {
+                    if (textoBusqueda.isNotEmpty()) {
+                        IconButton(onClick = { textoBusqueda = "" }) {
+                            Icon(imageVector = Icons.Default.Close, contentDescription = "Limpiar búsqueda")
+                        }
+                    }
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 6.dp)
+            )
+
+            // Resumen operativo compacto (KPIs de las faenas visibles)
+            ResumenOperativoRow(
+                servicios = serviciosFiltrados,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+
             // Barra horizontal de chips de filtrado Material 3
             val scrollStateFiltros = rememberScrollState()
             Row(
@@ -478,6 +526,71 @@ private fun TarjetaClimaFaena(
                     }
                 }
             }
+        }
+    }
+}
+
+
+
+/**
+ * Fila compacta de indicadores operativos (total de faenas, horas hombre y monto estimado).
+ */
+@Composable
+private fun ResumenOperativoRow(
+    servicios: List<Servicio>,
+    modifier: Modifier = Modifier
+) {
+    val totalHoras = servicios.sumOf { it.horasTrabajadas }
+    val totalCosto = servicios.sumOf { it.costoEstimado }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        KpiChipCard(
+            etiqueta = "Faenas",
+            valor = "${servicios.size}",
+            modifier = Modifier.weight(1f)
+        )
+        KpiChipCard(
+            etiqueta = "Horas",
+            valor = "${"%.1f".format(totalHoras)} h",
+            modifier = Modifier.weight(1f)
+        )
+        KpiChipCard(
+            etiqueta = "Estimado",
+            valor = "%,.0f CLP".format(totalCosto).replace(',', ' '),
+            modifier = Modifier.weight(1.4f)
+        )
+    }
+}
+
+@Composable
+private fun KpiChipCard(
+    etiqueta: String,
+    valor: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+            Text(
+                text = etiqueta,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = valor,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }

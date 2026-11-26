@@ -183,6 +183,72 @@ class ServicioViewModelTest {
         coVerify(exactly = 0) { repositorio.guardarServicio(any()) }
     }
 
+    @Test
+    fun actualizarEstadoServicio_estadoDistinto_actualizaEnRepositorio() {
+        val vm = crearVm()
+        val orden = Servicio(
+            id = 1,
+            fecha = "25/11/2026",
+            horaInicio = "08:00",
+            horaTermino = "12:00",
+            supervisor = "Fernando Barra",
+            tipoServicio = TipoServicio.FOSA_SEPTICA,
+            descripcion = "Limpieza de fosa séptica en sector sur",
+            horasTrabajadas = 4.0,
+            costoEstimado = 175000.0,
+            estado = EstadoServicio.FINALIZADO
+        )
+
+        vm.actualizarEstadoServicio(orden, EstadoServicio.PENDIENTE_REVISION)
+
+        coVerify(exactly = 1) {
+            repositorio.actualizarServicio(orden.copy(estado = EstadoServicio.PENDIENTE_REVISION))
+        }
+    }
+
+    @Test
+    fun actualizarEstadoServicio_mismoEstado_noLlamaAlRepositorio() {
+        val vm = crearVm()
+        val orden = Servicio(
+            id = 1,
+            fecha = "25/11/2026",
+            horaInicio = "08:00",
+            horaTermino = "12:00",
+            supervisor = "Fernando Barra",
+            tipoServicio = TipoServicio.FOSA_SEPTICA,
+            descripcion = "Limpieza de fosa séptica en sector sur",
+            horasTrabajadas = 4.0,
+            costoEstimado = 175000.0,
+            estado = EstadoServicio.FINALIZADO
+        )
+
+        vm.actualizarEstadoServicio(orden, EstadoServicio.FINALIZADO)
+
+        coVerify(exactly = 0) { repositorio.actualizarServicio(any()) }
+    }
+
+    @Test
+    fun eliminarServicio_eliminaEnRepositorioYNotificaCallback() {
+        val vm = crearVm()
+        val orden = Servicio(
+            id = 1,
+            fecha = "25/11/2026",
+            horaInicio = "08:00",
+            horaTermino = "12:00",
+            supervisor = "Fernando Barra",
+            tipoServicio = TipoServicio.FOSA_SEPTICA,
+            descripcion = "Limpieza de fosa séptica en sector sur",
+            horasTrabajadas = 4.0,
+            costoEstimado = 175000.0
+        )
+        var eliminado = false
+
+        vm.eliminarServicio(orden) { eliminado = true }
+
+        assertTrue(eliminado)
+        coVerify(exactly = 1) { repositorio.eliminarServicio(orden) }
+    }
+
     // ---------- API externa de clima ----------
 
     @Test

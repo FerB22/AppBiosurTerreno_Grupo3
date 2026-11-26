@@ -219,4 +219,18 @@ class ServicioViewModel(
             onSuccess()
         }
     }
+
+    fun actualizarEstadoServicio(servicio: Servicio, nuevoEstado: EstadoServicio) {
+        if (servicio.estado == nuevoEstado) return
+        viewModelScope.launch {
+            repository.actualizarServicio(servicio.copy(estado = nuevoEstado))
+        }
+    }
+
+    fun eliminarServicio(servicio: Servicio, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            repository.eliminarServicio(servicio)
+            onSuccess()
+        }
+    }
 }

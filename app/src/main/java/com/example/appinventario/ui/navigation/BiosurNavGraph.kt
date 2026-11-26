@@ -223,6 +223,16 @@ fun BiosurNavHost(
                 servicio = servicio,
                 onVolverClick = {
                     navController.popBackStack()
+                },
+                onEstadoChange = { nuevoEstado ->
+                    servicio?.let { viewModel.actualizarEstadoServicio(it, nuevoEstado) }
+                },
+                onEliminarClick = {
+                    servicio?.let {
+                        viewModel.eliminarServicio(it) {
+                            navController.popBackStack()
+                        }
+                    }
                 }
             )
         }
