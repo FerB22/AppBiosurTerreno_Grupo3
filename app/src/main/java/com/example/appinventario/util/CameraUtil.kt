@@ -34,7 +34,13 @@ object CameraUtil {
      * Decodifica una imagen desde una URI de FileProvider a un ImageBitmap de Compose
      * aplicando submuestreo seguro para prevenir errores de memoria (OutOfMemoryError).
      */
-    fun cargarBitmapDesdeUri(context: Context, uriString: String?, reqWidth: Int = 800, reqHeight: Int = 800): ImageBitmap? {
+    fun cargarBitmapDesdeUri(context: Context, uriString: String?, reqWidth: Int = 800, reqHeight: Int = 800): ImageBitmap? =
+        cargarAndroidBitmapDesdeUri(context, uriString, reqWidth, reqHeight)?.asImageBitmap()
+
+    /**
+     * Decodifica un [Bitmap] nativo de Android desde una URI aplicando submuestreo seguro.
+     */
+    fun cargarAndroidBitmapDesdeUri(context: Context, uriString: String?, reqWidth: Int = 800, reqHeight: Int = 800): Bitmap? {
         if (uriString.isNullOrBlank()) return null
         return try {
             val uri = Uri.parse(uriString)
@@ -61,7 +67,7 @@ object CameraUtil {
             }
 
             context.contentResolver.openInputStream(uri)?.use { inputStream ->
-                BitmapFactory.decodeStream(inputStream, null, decodeOptions)?.asImageBitmap()
+                BitmapFactory.decodeStream(inputStream, null, decodeOptions)
             }
         } catch (_: Exception) {
             null

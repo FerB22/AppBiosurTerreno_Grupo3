@@ -1,5 +1,6 @@
 package com.example.appinventario.ui.screens
 
+import android.content.ClipData
 import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -52,6 +53,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,6 +70,10 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.Servicio
 import com.example.appinventario.util.CameraUtil
+import com.example.appinventario.util.PdfInformeUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Pantalla que detalla el costo económico, la trazabilidad técnica y la evidencia fotográfica de una faena.
@@ -82,6 +88,8 @@ fun DetalleServicioScreen(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var generandoPdf by remember { mutableStateOf(false) }
     var fotoModalUri by remember { mutableStateOf<String?>(null) }
     var fotoModalTitulo by remember { mutableStateOf("") }
     var mostrarConfirmacionEliminar by remember { mutableStateOf(false) }
@@ -379,36 +387,34 @@ fun DetalleServicioScreen(
 
                         Button(
                             onClick = {
-                                val gpsTexto = if (servicio.latitud != null && servicio.longitud != null) {
-                                    "https://maps.google.com/?q=${servicio.latitud},${servicio.longitud}"
-                                } else {
-                                    "No capturado"
+                                if (generandoPdf) return@Button
+                                generandoPdf = true
+                                scope.launch {
+                                    val pdfUri = withContext(Dispatchers.IO) {
+                                        PdfInformeUtil.generarPdfYUri(context, servicio)
+                                    }
+                                    generandoPdf = false
+                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                        type = "application/pdf"
+                                        putExtra(Intent.EXTRA_STREAM, pdfUri)
+                                        putExtra(Intent.EXTRA_SUBJECT, "Informe Biosur - ${servicio.tipoServicio.etiqueta}")
+                                        putExtra(Intent.EXTRA_TEXT, "Adjunto informe técnico PDF de la orden #${servicio.id}.")
+                                        clipData = ClipData.newRawUri("Informe PDF Biosur", pdfUri)
+                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Enviar informe PDF"))
                                 }
-                                val totalClp = "%,.0f CLP".format(servicio.costoEstimado).replace(',', ' ')
-                                val reporte = buildString {
-                                    appendLine("INFORME TÉCNICO BIOSUR TERRENO")
-                                    appendLine("Orden #${servicio.id} · ${servicio.tipoServicio.etiqueta}")
-                                    appendLine("Estado: ${servicio.estado.etiqueta}")
-                                    appendLine("Fecha: ${servicio.fecha} (${servicio.horaInicio})")
-                                    appendLine("Supervisor: ${servicio.supervisor}")
-                                    appendLine("Detalle: ${servicio.descripcion}")
-                                    appendLine("Horas hombre: ${servicio.horasTrabajadas} h")
-                                    appendLine("Total estimado: $totalClp")
-                                    appendLine("Ubicación GPS: $gpsTexto")
-                                }
-                                val intent = Intent(Intent.ACTION_SEND).apply {
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_SUBJECT, "Informe Biosur - ${servicio.tipoServicio.etiqueta}")
-                                    putExtra(Intent.EXTRA_TEXT, reporte)
-                                }
-                                context.startActivity(Intent.createChooser(intent, "Enviar informe técnico"))
                             },
+                            enabled = !generandoPdf,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Icon(imageVector = Icons.Default.Share, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Enviar / compartir informe", fontWeight = FontWeight.SemiBold)
+                            Text(
+                                text = if (generandoPdf) "Generando PDF…" else "Enviar / compartir informe PDF",
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
