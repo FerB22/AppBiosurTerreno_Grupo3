@@ -1,5 +1,6 @@
 package com.example.appinventario.ui.screens
 
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -372,6 +374,50 @@ fun DetalleServicioScreen(
                                 )
                             }
                         }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        Button(
+                            onClick = {
+                                val gpsTexto = if (servicio.latitud != null && servicio.longitud != null) {
+                                    "https://maps.google.com/?q=${servicio.latitud},${servicio.longitud}"
+                                } else {
+                                    "No capturado"
+                                }
+                                val totalClp = "%,.0f CLP".format(servicio.costoEstimado).replace(',', ' ')
+                                val reporte = buildString {
+                                    appendLine("INFORME TÉCNICO BIOSUR TERRENO")
+                                    appendLine("Orden #${servicio.id} · ${servicio.tipoServicio.etiqueta}")
+                                    appendLine("Estado: ${servicio.estado.etiqueta}")
+                                    appendLine("Fecha: ${servicio.fecha} (${servicio.horaInicio})")
+                                    appendLine("Supervisor: ${servicio.supervisor}")
+                                    appendLine("Detalle: ${servicio.descripcion}")
+                                    appendLine("Horas hombre: ${servicio.horasTrabajadas} h")
+                                    appendLine("Total estimado: $totalClp")
+                                    appendLine("Ubicación GPS: $gpsTexto")
+                                }
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, "Informe Biosur - ${servicio.tipoServicio.etiqueta}")
+                                    putExtra(Intent.EXTRA_TEXT, reporte)
+                                }
+                                context.startActivity(Intent.createChooser(intent, "Enviar informe técnico"))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(imageVector = Icons.Default.Share, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Enviar / compartir informe", fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = "Destino de datos: guardado en base local (Room) y preparado para envío al servidor Biosur (ms-servicios).",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
                         Spacer(modifier = Modifier.height(12.dp))
 

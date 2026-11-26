@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -39,6 +40,7 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
@@ -51,6 +53,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +83,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
+import com.example.appinventario.model.CatalogoRecursosBiosur
+import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.TipoServicio
 import com.example.appinventario.util.CameraUtil
 import com.example.appinventario.viewmodel.FormularioUiState
@@ -378,6 +383,40 @@ fun RegistroServicioScreen(
                 }
             }
 
+            // 1b. Datos del cliente y tipo de flujo (Programación vs. Cierre en terreno)
+            OutlinedTextField(
+                value = uiState.cliente,
+                onValueChange = { viewModel.onClienteChange(it) },
+                label = { Text("Cliente o empresa mandante") },
+                placeholder = { Text("Ej.: Forestal Arauco / Planta Nacimiento") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp)
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = uiState.estadoInicial == EstadoServicio.EN_PROCESO,
+                    onClick = { viewModel.onEstadoInicialChange(EstadoServicio.EN_PROCESO) },
+                    label = { Text("Programar (En faena)") }
+                )
+                FilterChip(
+                    selected = uiState.estadoInicial == EstadoServicio.FINALIZADO,
+                    onClick = { viewModel.onEstadoInicialChange(EstadoServicio.FINALIZADO) },
+                    label = { Text("Registrar ejecutada") }
+                )
+            }
+
             // 2. Descripción técnica del trabajo (validación por campo con ícono)
             Column {
                 OutlinedTextField(
@@ -409,6 +448,35 @@ fun RegistroServicioScreen(
                         style = MaterialTheme.typography.labelSmall,
                         modifier = Modifier.padding(start = 8.dp, top = 4.dp)
                     )
+                }
+            }
+
+            // 2b. Catálogo seleccionable de recursos, personal y equipos con tarifa propia
+            Column {
+                Text(
+                    text = "Recursos y equipos asignados (cálculo automático)",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CatalogoRecursosBiosur.recursos.forEach { recurso ->
+                        val activo = recurso.id in uiState.recursosSeleccionados
+                        FilterChip(
+                            selected = activo,
+                            onClick = { viewModel.onToggleRecurso(recurso.id) },
+                            label = {
+                                val monto = "%,.0f".format(recurso.valorUnitarioClp).replace(',', ' ')
+                                Text("${recurso.nombre} · $monto CLP")
+                            }
+                        )
+                    }
                 }
             }
 

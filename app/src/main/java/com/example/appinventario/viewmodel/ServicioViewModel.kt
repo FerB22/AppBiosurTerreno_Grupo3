@@ -2,6 +2,7 @@ package com.example.appinventario.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.appinventario.model.CatalogoRecursosBiosur
 import com.example.appinventario.model.EstadoServicio
 import com.example.appinventario.model.ModoTema
 import com.example.appinventario.model.Servicio
@@ -23,11 +24,14 @@ import java.util.Locale
  * Estado inmutable de la interfaz de registro de faenas en terreno.
  */
 data class FormularioUiState(
+    val cliente: String = "",
     val tipoServicio: TipoServicio = TipoServicio.FOSA_SEPTICA,
+    val estadoInicial: EstadoServicio = EstadoServicio.FINALIZADO,
     val descripcion: String = "",
     val errorDescripcion: String? = null,
     val horasTrabajadas: String = "",
     val errorHoras: String? = null,
+    val recursosSeleccionados: Set<String> = emptySet(),
     val costoMateriales: String = "35000",
     val errorCostoMateriales: String? = null,
     val supervisor: String = "Fernando Barra Muñoz",
@@ -93,6 +97,28 @@ class ServicioViewModel(
 
     fun onModoTemaChange(nuevoModo: ModoTema) {
         _modoTema.update { nuevoModo }
+    }
+
+    fun onClienteChange(nuevoCliente: String) {
+        _formularioState.update { it.copy(cliente = nuevoCliente) }
+    }
+
+    fun onEstadoInicialChange(nuevoEstado: EstadoServicio) {
+        _formularioState.update { it.copy(estadoInicial = nuevoEstado) }
+    }
+
+    fun onToggleRecurso(recursoId: String) {
+        val actuales = _formularioState.value.recursosSeleccionados
+        val actualizados = if (recursoId in actuales) actuales - recursoId else actuales + recursoId
+        val totalRecursos = CatalogoRecursosBiosur.calcularTotal(actualizados).toLong().toString()
+        _formularioState.update { state ->
+            val updated = state.copy(
+                recursosSeleccionados = actualizados,
+                costoMateriales = totalRecursos,
+                errorCostoMateriales = null
+            )
+            updated.copy(isFormValido = calcularValidez(updated))
+        }
     }
 
     fun onTipoServicioChange(nuevoTipo: TipoServicio) {
@@ -196,6 +222,13 @@ class ServicioViewModel(
             val valorHora = 35000.0 // 35 000 CLP/h tarifa base técnica
             val costoTotal = (horas * valorHora) + costoMat
 
+            val prefijoCliente = if (current.cliente.isNotBlank()) "[Cliente: ${current.cliente.trim()}] " else ""
+            val nombresRecursos = CatalogoRecursosBiosur.recursos
+                .filter { it.id in current.recursosSeleccionados }
+                .joinToString(", ") { it.nombre }
+            val sufijoRecursos = if (nombresRecursos.isNotBlank()) " · Recursos: $nombresRecursos" else ""
+            val descripcionFinal = "$prefijoCliente${current.descripcion.trim()}$sufijoRecursos"
+
             val nuevoServicio = Servicio(
                 id = 0, // Room auto-generará la clave primaria al insertar
                 fecha = fechaActual,
@@ -203,14 +236,14 @@ class ServicioViewModel(
                 horaTermino = horaActual,
                 supervisor = current.supervisor,
                 tipoServicio = current.tipoServicio,
-                descripcion = current.descripcion.trim(),
+                descripcion = descripcionFinal,
                 horasTrabajadas = horas,
                 costoEstimado = costoTotal,
                 latitud = current.latitud,
                 longitud = current.longitud,
                 fotoAntesUri = current.fotoAntesUri,
                 fotoDespuesUri = current.fotoDespuesUri,
-                estado = EstadoServicio.FINALIZADO
+                estado = current.estadoInicial
             )
 
             // Inserción en la base de datos persistente mediante el repositorio

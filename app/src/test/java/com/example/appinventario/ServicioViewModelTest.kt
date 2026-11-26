@@ -249,6 +249,37 @@ class ServicioViewModelTest {
         coVerify(exactly = 1) { repositorio.eliminarServicio(orden) }
     }
 
+    @Test
+    fun onToggleRecurso_calculaElCostoAutomaticamente() {
+        val vm = crearVm()
+
+        vm.onToggleRecurso("EQ_LIMPIAFOSAS")
+        assertEquals("120000", vm.formularioState.value.costoMateriales)
+
+        vm.onToggleRecurso("PER_CUADRILLA")
+        assertEquals("165000", vm.formularioState.value.costoMateriales)
+
+        vm.onToggleRecurso("EQ_LIMPIAFOSAS")
+        assertEquals("45000", vm.formularioState.value.costoMateriales)
+    }
+
+    @Test
+    fun registrarServicio_conClienteYEstadoProgramado_incluyeDatosEnLaOrden() {
+        val capturado = slot<Servicio>()
+        coEvery { repositorio.guardarServicio(capture(capturado)) } returns Unit
+        val vm = crearVm()
+        vm.onClienteChange("Forestal Arauco")
+        vm.onEstadoInicialChange(EstadoServicio.EN_PROCESO)
+        vm.onToggleRecurso("MAT_QUIMICOS")
+        vm.llenarFormularioValido()
+
+        vm.registrarServicio {}
+
+        assertTrue(capturado.captured.descripcion.startsWith("[Cliente: Forestal Arauco]"))
+        assertTrue(capturado.captured.descripcion.contains("Insumos químicos biodegradables"))
+        assertEquals(EstadoServicio.EN_PROCESO, capturado.captured.estado)
+    }
+
     // ---------- API externa de clima ----------
 
     @Test
